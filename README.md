@@ -18,17 +18,74 @@ Sistema de cupons de desconto com regras dinâmicas para aplicação no checkout
 
 ## ✨ Funcionalidades
 
-- **Criar cupons** com desconto fixo ou percentual
-- **Regras dinâmicas e composáveis:**
-  - Valor mínimo do pedido
-  - Expiração por data
-  - Uso único por cliente
-  - Limite máximo de usos (extensibilidade)
-- **Aplicação no checkout** com validação completa e feedback detalhado
-- **Registro de uso** de cupons para auditoria
-- **Segurança contra reuso** inválido (constraint no banco + validação na aplicação)
-- **API REST documentada** com Swagger/OpenAPI
-- **Dados iniciais (seed)** com cupons de exemplo para testes rápidos
+### 🏷️ Gerenciamento de Cupons
+
+- **Criar cupom** com código único (3–30 caracteres alfanuméricos), tipo e valor de desconto:
+  - **FIXED** — desconto de valor fixo em reais (ex: R$ 20,00). Limitado ao total do pedido (nunca gera valor negativo).
+  - **PERCENTAGE** — desconto percentual (1% a 100%). Calculado sobre o total do pedido com precisão de 2 casas decimais.
+- **Listar cupons** com filtro opcional por status (`active=true` / `active=false`).
+- **Buscar cupom** pelo código único.
+- **Desativar cupom** via PATCH, impedindo seu uso em novos checkouts sem excluí-lo do banco.
+
+### 📏 Regras Dinâmicas e Composáveis
+
+As regras são implementadas com o **Specification Pattern**: cada regra é uma classe independente. Um cupom pode ter zero ou mais regras combinadas. Todas são avaliadas e os erros são acumulados — a API retorna **todos os motivos de rejeição** de uma vez, não apenas o primeiro.
+
+| Regra | Descrição |
+|---|---|
+| **Valor mínimo do pedido** | O pedido deve atingir um valor mínimo em reais para o cupom ser válido. |
+| **Expiração por data** | O cupom só é válido até uma data/hora específica. Após esse momento, é recusado automaticamente. |
+| **Uso único por cliente** | Cada `clientId` só pode usar o cupom uma vez. Tentativas de reuso são bloqueadas na aplicação **e** por constraint `UNIQUE` no banco de dados. |
+| **Limite máximo de usos** | O cupom tem um número máximo de utilizações totais. Ao atingir o limite, passa a ser recusado para qualquer cliente. |
+
+### 🛒 Checkout com Feedback Detalhado
+
+O endpoint de checkout **não lança erros 4xx** para cupons inválidos — retorna sempre `200 OK` com o campo `valid` indicando o resultado. Isso permite que o front-end exiba mensagens amigáveis sem tratar exceções.
+
+```json
+// Cupom válido
+{
+  "valid": true,
+  "couponCode": "MAX50",
+  "originalTotal": 16000.00,
+  "discountApplied": 8000.00,
+  "finalTotal": 8000.00,
+  "message": "Cupom aplicado com sucesso! Você economizou R$ 8000.00",
+  "errors": []
+}
+
+// Cupom inválido (todos os erros retornados juntos)
+{
+  "valid": false,
+  "couponCode": "EXPIRADO20",
+  "originalTotal": 50.00,
+  "discountApplied": 0,
+  "finalTotal": 50.00,
+  "message": "Falha na validação do cupom",
+  "errors": [
+    "O cupom expirou em 2025-01-01T00:00",
+    "Pedido abaixo do valor mínimo de R$ 100,00"
+  ]
+}
+```
+
+### 🔒 Segurança Contra Reuso Inválido
+
+Proteção em duas camadas para cupons de uso único:
+1. **Camada de aplicação:** consulta o histórico de uso antes de calcular o desconto.
+2. **Camada de banco:** constraint `UNIQUE (coupon_id, client_id)` impede gravações duplicadas mesmo em cenários de alta concorrência (race conditions).
+
+### 📋 Auditoria de Uso
+
+Cada uso de cupom é registrado com: `couponCode`, `clientId`, `orderTotal`, `discountApplied` e `usedAt`. Isso garante rastreabilidade completa para fins de auditoria e analytics.
+
+### 📖 API REST Documentada
+
+Documentação interativa disponível via **Swagger UI** em `/swagger-ui.html`. Todos os endpoints possuem descrições, exemplos de request/response e códigos de status documentados.
+
+### 🌱 Dados Iniciais (Seed)
+
+No perfil `dev`, a aplicação inicializa automaticamente com cupons de exemplo cobrindo todos os cenários: desconto fixo, percentual, expirado, inativo, com e sem regras.
 
 ---
 
@@ -152,16 +209,16 @@ Ao iniciar o projeto (profile `dev`), os seguintes cupons são criados automatic
 | `MEGA50` | Percentual | 50% | Limite de 50 usos, valor mínimo R$ 200 |
 | `EXPIRADO20` | Fixo | R$ 20 | Expirado (demonstra validação) |
 | `INATIVO30` | Percentual | 30% | Desativado (demonstra validação) |
-| `MAX100` | Fixo | R$ 8.000 | 🎯 Easter Egg — veja abaixo! |
+| `MAX50` | Percentual | 50% | 🎯 Easter Egg — veja abaixo! |
 
-### 🎯 Easter Egg: Cupom MAX100
+### 🎯 Easter Egg: Cupom MAX50
 
-> 🚀 Use o cupom **MAX100** e tenha **100% de chance de contratar o Max**!
+> 🚀 Use o cupom **MAX50** e tenha **50% de desconto** na sua contratação!
 
-Cupom especial com desconto fixo de R$ 8.000. Teste no Swagger com:
-- **Cupom:** `MAX100`
-- **Cliente:** `rafa-caceres`
-- **Valor do pedido:** `8000.00`
+Cupom especial com desconto de 50%. Teste no Swagger com:
+- **Cupom:** `MAX50`
+- **Cliente:** `Taller`
+- **Valor mínimo do pedido:** `16000.00`
 
 ---
 
@@ -267,7 +324,7 @@ curl http://localhost:8080/api/v1/coupons?active=true
 ### Buscar cupom por código
 
 ```bash
-curl http://localhost:8080/api/v1/coupons/MAX100
+curl http://localhost:8080/api/v1/coupons/MAX50
 ```
 
 ### Desativar cupom
@@ -332,7 +389,7 @@ src/main/resources/
 ## 🛠️ Tecnologias
 
 - **Java 25** + **Spring Boot 4.0.6**
-- **Spring Data JPA** + **H2 Database**
+- **Spring Data JPA** + **H2 Database** (Dev/Test) e **PostgreSQL** (Produção/Docker)
 - **Bean Validation** (Jakarta)
 - **SpringDoc OpenAPI** (Swagger)
 - **JUnit 5** + **Mockito**

@@ -53,13 +53,13 @@ VALUES ('f6a7b8c9-d0e1-2345-fabc-456789012345', 'INATIVO30', 'Cupom desativado p
 
 -- =============================================
 -- 🎯 Easter Egg: Cupom especial para o empregador!
--- Use MAX100 e tenha 100% de chance de contratar o Max 😎
+-- Use MAX50 e tenha 50% de desconto na sua contratação 😎
 -- =============================================
 
--- Cupom MAX100: R$ 8.000 de desconto fixo (100% de chance de contratar o Max!)
+-- Cupom MAX50: 50% de desconto
 INSERT INTO coupons (id, code, description, discount_type, discount_value, active,
                      minimum_order_value, expires_at, single_use_per_client, max_usages,
                      created_at, updated_at, version)
-VALUES ('00000000-0a01-0000-0000-000000000100', 'MAX100', '🚀 Use este cupom e tenha 100% de chance de contratar o Max! Desconto de R$ 8.000 garantido.', 'FIXED', 8000.00, true,
-        8000.00, '2027-12-31T23:59:59', true, 10,
+VALUES ('00000000-0a01-0000-0000-000000000100', 'MAX50', '🚀 Use o cupom MAX50 e tenha 50% de desconto na sua contratação.', 'PERCENTAGE', 50.00, true,
+        16000.00, '2027-12-31T23:59:59', true, 10,
         '2026-04-29T00:00:00', '2026-04-29T00:00:00', 0);

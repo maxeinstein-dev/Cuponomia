@@ -1,7 +1,7 @@
 package br.com.maxsueleinstein.cuponomia.domain.exception;
 
 /**
- * Thrown when attempting to create a coupon with a code that already exists.
+ * Lançada ao tentar criar um cupom com um código que já existe.
  */
 public class DuplicateCouponCodeException extends RuntimeException {
     public DuplicateCouponCodeException(String code) {

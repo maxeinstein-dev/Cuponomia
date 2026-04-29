@@ -5,11 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Value Object representing the result of coupon validation.
- * <p>
- * Composable: multiple ValidationResults can be combined into one,
- * accumulating all error messages. This supports the Specification Pattern
- * where multiple rules are evaluated and all violations are reported.
+ * Objeto de Valor (Value Object) que representa o resultado da validação de um
+ * cupom.
+ * 
+ * Componível: múltiplos ValidationResults podem ser combinados em um só,
+ * acumulando todas as mensagens de erro. Isso suporta o Specification Pattern
+ * onde múltiplas regras são avaliadas e todas as violações são reportadas.
  */
 public final class ValidationResult {
 
@@ -30,8 +31,9 @@ public final class ValidationResult {
     }
 
     /**
-     * Combines two validation results. If either is invalid, the combined
-     * result is invalid with all errors accumulated.
+     * Combina dois resultados de validação. Se qualquer um for inválido, o
+     * resultado
+     * combinado será inválido com todos os erros acumulados.
      */
     public ValidationResult combine(ValidationResult other) {
         if (this.valid && other.valid) {

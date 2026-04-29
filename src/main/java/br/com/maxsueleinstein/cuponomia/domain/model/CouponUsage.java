@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /**
  * Entity representing a record of coupon usage.
- * <p>
+ * 
  * Tracks who used a coupon, when, and how much discount was applied.
  * Used for auditing and enforcing single-use-per-client rules.
  */
@@ -23,11 +23,11 @@ public class CouponUsage {
     public CouponUsage(UUID id, UUID couponId, String clientId,
                        BigDecimal orderTotal, BigDecimal discountApplied,
                        LocalDateTime usedAt) {
-        Objects.requireNonNull(id, "Usage ID must not be null");
-        Objects.requireNonNull(couponId, "Coupon ID must not be null");
-        Objects.requireNonNull(clientId, "Client ID must not be null");
-        Objects.requireNonNull(orderTotal, "Order total must not be null");
-        Objects.requireNonNull(discountApplied, "Discount applied must not be null");
+        Objects.requireNonNull(id, "O ID do uso não pode ser nulo");
+        Objects.requireNonNull(couponId, "O ID do cupom não pode ser nulo");
+        Objects.requireNonNull(clientId, "O ID do cliente não pode ser nulo");
+        Objects.requireNonNull(orderTotal, "O valor total do pedido não pode ser nulo");
+        Objects.requireNonNull(discountApplied, "O desconto aplicado não pode ser nulo");
 
         this.id = id;
         this.couponId = couponId;

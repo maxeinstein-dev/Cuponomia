@@ -1,10 +1,12 @@
 package br.com.maxsueleinstein.cuponomia.domain.model;
 
 /**
- * Enum representing the type of discount a coupon provides.
- * <p>
- * FIXED: A fixed monetary amount is subtracted from the order total (e.g., R$ 20.00 off).
- * PERCENTAGE: A percentage of the order total is subtracted (e.g., 15% off).
+ * Representa o tipo de desconto que um cupom oferece.
+ * 
+ * FIXED: Um valor monetário fixo é subtraído do total do pedido (ex: R$ 20,00
+ * de desconto).
+ * PERCENTAGE: Um percentual do total do pedido é subtraído (ex: 15% de
+ * desconto).
  */
 public enum DiscountType {
     FIXED,

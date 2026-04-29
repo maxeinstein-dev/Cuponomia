@@ -1,7 +1,7 @@
 package br.com.maxsueleinstein.cuponomia.domain.exception;
 
 /**
- * Thrown when a client attempts to reuse a coupon they have already used.
+ * Lançada quando um cliente tenta reusar um cupom que ele já utilizou.
  */
 public class CouponAlreadyUsedException extends RuntimeException {
     public CouponAlreadyUsedException(String couponCode, String clientId) {

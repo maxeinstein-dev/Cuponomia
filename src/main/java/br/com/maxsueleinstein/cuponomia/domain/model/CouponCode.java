@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 /**
  * Value Object representing a coupon code.
- * <p>
+ * 
  * Enforces business invariants:
  * - Not null or blank
  * - Alphanumeric with optional hyphens/underscores
@@ -19,13 +19,13 @@ public final class CouponCode {
 
     public CouponCode(String value) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Coupon code must not be null or blank");
+            throw new IllegalArgumentException("O código do cupom não pode ser nulo ou vazio");
         }
         String normalized = value.trim().toUpperCase();
         if (!VALID_PATTERN.matcher(normalized).matches()) {
             throw new IllegalArgumentException(
-                    "Coupon code must be 3-30 alphanumeric characters (hyphens and underscores allowed). Got: " + value
-            );
+                    "O código do cupom deve conter de 3 a 30 caracteres alfanuméricos (hifens e underlines permitidos). Recebido: "
+                            + value);
         }
         this.value = normalized;
     }
@@ -36,8 +36,10 @@ public final class CouponCode {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         CouponCode that = (CouponCode) o;
         return Objects.equals(value, that.value);
     }

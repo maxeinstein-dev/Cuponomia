@@ -3,8 +3,8 @@ package br.com.maxsueleinstein.cuponomia.domain.exception;
 import java.util.List;
 
 /**
- * Thrown when coupon validation fails (one or more rules violated).
- * Carries all validation error messages for clear user feedback.
+ * Lançada quando a validação do cupom falha (uma ou mais regras violadas).
+ * Carrega todas as mensagens de erro de validação para fornecer um feedback claro ao usuário.
  */
 public class InvalidCouponException extends RuntimeException {
 

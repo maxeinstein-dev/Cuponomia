@@ -9,17 +9,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Rule: the coupon must not have expired.
- * <p>
- * Compares the current time against the coupon's expiration date.
- * Uses an injected clock supplier for testability.
+ * Regra: o cupom não pode estar expirado.
+ * 
+ * Compara o momento atual com a data de expiração do cupom.
+ * (O uso de relógio injetado pode ser adotado para facilitar os testes).
  */
 public class ExpirationDateRule implements CouponRule {
 
     private final LocalDateTime expiresAt;
 
     public ExpirationDateRule(LocalDateTime expiresAt) {
-        Objects.requireNonNull(expiresAt, "Expiration date must not be null");
+        Objects.requireNonNull(expiresAt, "A data de expiração não pode ser nula");
         this.expiresAt = expiresAt;
     }
 

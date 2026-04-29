@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Port (interface) for coupon usage persistence.
- * <p>
- * Supports querying usage for single-use validation
- * and counting total usages for max-usage rules.
+ * Port (interface) para persistência de registros de uso de cupons.
+ * 
+ * Suporta a consulta de uso para validação de uso único por cliente
+ * e a contagem de usos totais para a regra de limite máximo de usos.
  */
 public interface CouponUsageRepository {
 

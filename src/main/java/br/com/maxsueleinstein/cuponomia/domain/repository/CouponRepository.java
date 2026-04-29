@@ -7,10 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Port (interface) for coupon persistence.
- * <p>
- * Defined in the domain layer — implementations live in infrastructure.
- * This inversion of dependency is the core of Hexagonal Architecture.
+ * Port (interface) para persistência de cupons.
+ * 
+ * Definida na camada de domínio — as implementações residem na infraestrutura.
+ * Essa inversão de dependência é o núcleo da Arquitetura Hexagonal.
  */
 public interface CouponRepository {
 

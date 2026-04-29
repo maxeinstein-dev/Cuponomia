@@ -1,7 +1,7 @@
 package br.com.maxsueleinstein.cuponomia.domain.exception;
 
 /**
- * Thrown when a coupon is not found by code or ID.
+ * Lançada quando um cupom não é encontrado por código ou ID.
  */
 public class CouponNotFoundException extends RuntimeException {
     public CouponNotFoundException(String code) {

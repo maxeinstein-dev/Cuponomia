@@ -5,7 +5,7 @@ import java.util.Objects;
 
 /**
  * Value Object representing the context of a checkout operation.
- * <p>
+ * 
  * Contains all information needed by coupon rules to validate
  * whether a coupon can be applied. Enriched by the Use Case layer
  * before being passed to the domain for validation.
@@ -18,11 +18,11 @@ public final class CheckoutContext {
     private final long totalCouponUsages;
 
     public CheckoutContext(String clientId, BigDecimal orderTotal,
-                           boolean clientAlreadyUsedCoupon, long totalCouponUsages) {
-        Objects.requireNonNull(clientId, "Client ID must not be null");
-        Objects.requireNonNull(orderTotal, "Order total must not be null");
+            boolean clientAlreadyUsedCoupon, long totalCouponUsages) {
+        Objects.requireNonNull(clientId, "O ID do cliente não pode ser nulo");
+        Objects.requireNonNull(orderTotal, "O valor total do pedido não pode ser nulo");
         if (orderTotal.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Order total must not be negative");
+            throw new IllegalArgumentException("O valor total do pedido não pode ser negativo");
         }
         this.clientId = clientId;
         this.orderTotal = orderTotal;
@@ -48,8 +48,10 @@ public final class CheckoutContext {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         CheckoutContext that = (CheckoutContext) o;
         return clientAlreadyUsedCoupon == that.clientAlreadyUsedCoupon
                 && totalCouponUsages == that.totalCouponUsages

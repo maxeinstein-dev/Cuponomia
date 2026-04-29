@@ -12,17 +12,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Rich domain entity representing a coupon.
- * <p>
- * Encapsulates business logic for:
- * - Discount calculation (fixed or percentage)
- * - Rule validation via Specification Pattern
- * - Lifecycle management (activation/deactivation)
- * <p>
- * Invariants enforced:
- * - Discount value must be positive
- * - Percentage discount must be between 0 (exclusive) and 100 (inclusive)
- * - Code is immutable after creation
+ * Entidade de domínio rica representando um cupom.
+ * 
+ * Encapsula lógica de negócio para:
+ * - Cálculo de desconto (fixo ou percentual)
+ * - Validação de regras via Specification Pattern
+ * - Gerenciamento de ciclo de vida (ativação/desativação)
+ * 
+ * Invariantes garantidas:
+ * - O valor do desconto deve ser positivo
+ * - Desconto percentual deve estar entre 0 (exclusivo) e 100 (inclusivo)
+ * - Código é imutável após a criação
  */
 public class Coupon {
 
@@ -37,19 +37,19 @@ public class Coupon {
     private final List<CouponRule> rules;
 
     public Coupon(UUID id, CouponCode code, String description,
-                  DiscountType discountType, BigDecimal discountValue,
-                  boolean active, LocalDateTime createdAt, LocalDateTime updatedAt,
-                  List<CouponRule> rules) {
-        Objects.requireNonNull(id, "Coupon ID must not be null");
-        Objects.requireNonNull(code, "Coupon code must not be null");
-        Objects.requireNonNull(discountType, "Discount type must not be null");
-        Objects.requireNonNull(discountValue, "Discount value must not be null");
+            DiscountType discountType, BigDecimal discountValue,
+            boolean active, LocalDateTime createdAt, LocalDateTime updatedAt,
+            List<CouponRule> rules) {
+        Objects.requireNonNull(id, "O ID do cupom não pode ser nulo");
+        Objects.requireNonNull(code, "O código do cupom não pode ser nulo");
+        Objects.requireNonNull(discountType, "O tipo de desconto não pode ser nulo");
+        Objects.requireNonNull(discountValue, "O valor do desconto não pode ser nulo");
 
         if (discountValue.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Discount value must be positive");
+            throw new IllegalArgumentException("O valor do desconto deve ser positivo");
         }
         if (discountType == DiscountType.PERCENTAGE && discountValue.compareTo(BigDecimal.valueOf(100)) > 0) {
-            throw new IllegalArgumentException("Percentage discount must not exceed 100%");
+            throw new IllegalArgumentException("O desconto percentual não pode exceder 100%");
         }
 
         this.id = id;
@@ -64,8 +64,9 @@ public class Coupon {
     }
 
     /**
-     * Validates this coupon against all its rules using the given checkout context.
-     * All rules are evaluated, accumulating every violation for clear user feedback.
+     * Valida este cupom contra todas as suas regras usando o contexto de checkout.
+     * Todas as regras são avaliadas, acumulando cada violação para um feedback
+     * claro ao usuário.
      */
     public ValidationResult validate(CheckoutContext context) {
         if (!active) {
@@ -80,14 +81,17 @@ public class Coupon {
     }
 
     /**
-     * Calculates the discount amount for the given order total.
-     * <p>
-     * For FIXED: returns the discount value directly (capped at order total).
-     * For PERCENTAGE: returns (orderTotal * discountValue / 100), rounded to 2 decimal places.
-     * The result is always capped at the order total to prevent negative totals.
+     * Calcula o valor do desconto para o total do pedido informado.
+     * 
+     * Para FIXED (Fixo): retorna o valor do desconto diretamente (limitado ao total
+     * do pedido).
+     * Para PERCENTAGE (Percentual): retorna (total do pedido * valor do desconto /
+     * 100), arredondado para 2 casas decimais.
+     * O resultado é sempre limitado ao total do pedido para evitar totais
+     * negativos.
      */
     public BigDecimal applyDiscount(BigDecimal orderTotal) {
-        Objects.requireNonNull(orderTotal, "Order total must not be null");
+        Objects.requireNonNull(orderTotal, "O valor total do pedido não pode ser nulo");
 
         BigDecimal discount = switch (discountType) {
             case FIXED -> discountValue;
@@ -96,12 +100,12 @@ public class Coupon {
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         };
 
-        // Cap discount at order total (never go negative)
+        // Limita o desconto ao total do pedido (nunca fica negativo)
         return discount.min(orderTotal);
     }
 
     /**
-     * Deactivates this coupon, preventing further use.
+     * Desativa este cupom, impedindo seu uso futuro.
      */
     public void deactivate() {
         this.active = false;
@@ -109,11 +113,11 @@ public class Coupon {
     }
 
     public void addRule(CouponRule rule) {
-        Objects.requireNonNull(rule, "Rule must not be null");
+        Objects.requireNonNull(rule, "A regra não pode ser nula");
         this.rules.add(rule);
     }
 
-    // Getters (no setters — rich entity with controlled mutation)
+    // Getters (sem setters — entidade rica com mutação controlada)
 
     public UUID getId() {
         return id;
@@ -153,8 +157,10 @@ public class Coupon {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Coupon coupon = (Coupon) o;
         return Objects.equals(id, coupon.id);
     }
@@ -166,6 +172,7 @@ public class Coupon {
 
     @Override
     public String toString() {
-        return "Coupon{code=" + code + ", type=" + discountType + ", value=" + discountValue + ", active=" + active + "}";
+        return "Coupon{code=" + code + ", type=" + discountType + ", value=" + discountValue + ", active=" + active
+                + "}";
     }
 }

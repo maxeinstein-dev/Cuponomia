@@ -5,11 +5,11 @@ import br.com.maxsueleinstein.cuponomia.domain.model.Coupon;
 import br.com.maxsueleinstein.cuponomia.domain.model.ValidationResult;
 
 /**
- * Rule: each client may use this coupon only once.
- * <p>
- * The CheckoutContext carries a pre-loaded flag indicating whether
- * the client has already used this coupon. This keeps the domain
- * layer pure — no repository access needed here.
+ * Regra: cada cliente só pode usar este cupom uma vez.
+ * 
+ * O CheckoutContext carrega uma flag pré-carregada indicando se
+ * o cliente já utilizou este cupom. Isso mantém a camada de domínio
+ * pura — sem a necessidade de acessar o repositório aqui.
  */
 public class SingleUsePerClientRule implements CouponRule {
 
@@ -18,8 +18,7 @@ public class SingleUsePerClientRule implements CouponRule {
         if (context.hasClientAlreadyUsedCoupon()) {
             return ValidationResult.fail(
                     String.format("O cliente '%s' já utilizou o cupom '%s'",
-                            context.getClientId(), coupon.getCode().getValue())
-            );
+                            context.getClientId(), coupon.getCode().getValue()));
         }
         return ValidationResult.ok();
     }

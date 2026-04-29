@@ -1,0 +1,13 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.mvn/wrapper/maven-wrapper.jar
+HELP.md
+README.md
+docker-compose.yml
+.gitignore
+.gitattributes

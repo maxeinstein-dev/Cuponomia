@@ -14,14 +14,14 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Coupon Entity")
+@DisplayName("Entidade Cupom")
 class CouponTest {
 
     private Coupon createCoupon(DiscountType type, BigDecimal value, List<br.com.maxsueleinstein.cuponomia.domain.rule.CouponRule> rules) {
         return new Coupon(
                 UUID.randomUUID(),
                 new CouponCode("TEST10"),
-                "Test coupon",
+                "Cupom de teste",
                 type,
                 value,
                 true,
@@ -32,39 +32,39 @@ class CouponTest {
     }
 
     @Nested
-    @DisplayName("Construction invariants")
+    @DisplayName("Invariantes de construção")
     class ConstructionInvariants {
 
         @Test
-        @DisplayName("should reject zero discount value")
+        @DisplayName("deve rejeitar valor de desconto zero")
         void shouldRejectZeroDiscount() {
             assertThrows(IllegalArgumentException.class, () ->
                     createCoupon(DiscountType.FIXED, BigDecimal.ZERO, List.of()));
         }
 
         @Test
-        @DisplayName("should reject negative discount value")
+        @DisplayName("deve rejeitar valor de desconto negativo")
         void shouldRejectNegativeDiscount() {
             assertThrows(IllegalArgumentException.class, () ->
                     createCoupon(DiscountType.FIXED, new BigDecimal("-10"), List.of()));
         }
 
         @Test
-        @DisplayName("should reject percentage above 100")
+        @DisplayName("deve rejeitar percentual acima de 100")
         void shouldRejectPercentageAbove100() {
             assertThrows(IllegalArgumentException.class, () ->
                     createCoupon(DiscountType.PERCENTAGE, new BigDecimal("101"), List.of()));
         }
 
         @Test
-        @DisplayName("should accept percentage of exactly 100")
+        @DisplayName("deve aceitar percentual exatamente igual a 100")
         void shouldAcceptPercentage100() {
             assertDoesNotThrow(() ->
                     createCoupon(DiscountType.PERCENTAGE, new BigDecimal("100"), List.of()));
         }
 
         @Test
-        @DisplayName("should reject null code")
+        @DisplayName("deve rejeitar código nulo")
         void shouldRejectNullCode() {
             assertThrows(NullPointerException.class, () ->
                     new Coupon(UUID.randomUUID(), null, "desc", DiscountType.FIXED,
@@ -73,11 +73,11 @@ class CouponTest {
     }
 
     @Nested
-    @DisplayName("Discount calculation")
+    @DisplayName("Cálculo de desconto")
     class DiscountCalculation {
 
         @Test
-        @DisplayName("FIXED: should return discount value")
+        @DisplayName("FIXO: deve retornar o valor do desconto")
         void fixedShouldReturnValue() {
             Coupon coupon = createCoupon(DiscountType.FIXED, new BigDecimal("20.00"), List.of());
             BigDecimal discount = coupon.applyDiscount(new BigDecimal("100.00"));
@@ -85,7 +85,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("FIXED: should cap at order total")
+        @DisplayName("FIXO: deve limitar o desconto ao total do pedido")
         void fixedShouldCapAtOrderTotal() {
             Coupon coupon = createCoupon(DiscountType.FIXED, new BigDecimal("50.00"), List.of());
             BigDecimal discount = coupon.applyDiscount(new BigDecimal("30.00"));
@@ -93,7 +93,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("PERCENTAGE: should calculate correctly")
+        @DisplayName("PERCENTUAL: deve calcular corretamente")
         void percentageShouldCalculate() {
             Coupon coupon = createCoupon(DiscountType.PERCENTAGE, new BigDecimal("15"), List.of());
             BigDecimal discount = coupon.applyDiscount(new BigDecimal("200.00"));
@@ -101,7 +101,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("PERCENTAGE 100%: should return full order total")
+        @DisplayName("PERCENTUAL 100%: deve retornar o total completo do pedido")
         void percentage100ShouldReturnFullTotal() {
             Coupon coupon = createCoupon(DiscountType.PERCENTAGE, new BigDecimal("100"), List.of());
             BigDecimal discount = coupon.applyDiscount(new BigDecimal("250.00"));
@@ -109,7 +109,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("PERCENTAGE: should round to 2 decimal places")
+        @DisplayName("PERCENTUAL: deve arredondar para 2 casas decimais")
         void percentageShouldRound() {
             Coupon coupon = createCoupon(DiscountType.PERCENTAGE, new BigDecimal("33.33"), List.of());
             BigDecimal discount = coupon.applyDiscount(new BigDecimal("100.00"));
@@ -118,11 +118,11 @@ class CouponTest {
     }
 
     @Nested
-    @DisplayName("Validation")
+    @DisplayName("Validação")
     class Validation {
 
         @Test
-        @DisplayName("should fail if coupon is inactive")
+        @DisplayName("deve falhar se o cupom estiver inativo")
         void shouldFailIfInactive() {
             Coupon coupon = createCoupon(DiscountType.FIXED, BigDecimal.TEN, List.of());
             coupon.deactivate();
@@ -135,7 +135,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("should pass with no rules and active coupon")
+        @DisplayName("deve passar sem regras com cupom ativo")
         void shouldPassWithNoRules() {
             Coupon coupon = createCoupon(DiscountType.FIXED, BigDecimal.TEN, List.of());
             CheckoutContext ctx = new CheckoutContext("client-1", new BigDecimal("100"), false, 0);
@@ -144,7 +144,7 @@ class CouponTest {
         }
 
         @Test
-        @DisplayName("should accumulate multiple rule violations")
+        @DisplayName("deve acumular múltiplas violações de regras")
         void shouldAccumulateViolations() {
             Coupon coupon = createCoupon(DiscountType.FIXED, BigDecimal.TEN, List.of(
                     new MinimumOrderValueRule(new BigDecimal("100")),
@@ -161,11 +161,11 @@ class CouponTest {
     }
 
     @Nested
-    @DisplayName("Lifecycle")
+    @DisplayName("Ciclo de vida")
     class Lifecycle {
 
         @Test
-        @DisplayName("deactivate should set active to false")
+        @DisplayName("desativar deve definir ativo como falso")
         void deactivateShouldSetInactive() {
             Coupon coupon = createCoupon(DiscountType.FIXED, BigDecimal.TEN, List.of());
             assertTrue(coupon.isActive());

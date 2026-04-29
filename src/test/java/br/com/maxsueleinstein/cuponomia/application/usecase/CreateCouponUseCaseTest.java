@@ -37,13 +37,13 @@ class CreateCouponUseCaseTest {
     }
 
     @Test
-    @DisplayName("should create a fixed discount coupon successfully")
+    @DisplayName("deve criar cupom de desconto fixo com sucesso")
     void shouldCreateFixedCoupon() {
         when(couponRepository.existsByCode("SAVE20")).thenReturn(false);
         when(couponRepository.save(any(Coupon.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CreateCouponRequest request = new CreateCouponRequest(
-                "SAVE20", "Save 20 reais", "FIXED", new BigDecimal("20.00"),
+                "SAVE20", "Economize R$ 20", "FIXED", new BigDecimal("20.00"),
                 new CreateCouponRequest.RulesRequest(new BigDecimal("100.00"), null, null, null));
 
         CouponResponse response = useCase.execute(request);
@@ -58,14 +58,14 @@ class CreateCouponUseCaseTest {
     }
 
     @Test
-    @DisplayName("should create a percentage discount coupon with all rules")
+    @DisplayName("deve criar cupom de desconto percentual com todas as regras")
     void shouldCreatePercentageCouponWithAllRules() {
         when(couponRepository.existsByCode("PCT15")).thenReturn(false);
         when(couponRepository.save(any(Coupon.class))).thenAnswer(inv -> inv.getArgument(0));
 
         LocalDateTime expiration = LocalDateTime.now().plusDays(30);
         CreateCouponRequest request = new CreateCouponRequest(
-                "PCT15", "15% off", "PERCENTAGE", new BigDecimal("15"),
+                "PCT15", "15% de desconto", "PERCENTAGE", new BigDecimal("15"),
                 new CreateCouponRequest.RulesRequest(new BigDecimal("50.00"), expiration, true, 500));
 
         CouponResponse response = useCase.execute(request);
@@ -78,7 +78,7 @@ class CreateCouponUseCaseTest {
     }
 
     @Test
-    @DisplayName("should throw DuplicateCouponCodeException for existing code")
+    @DisplayName("deve lançar DuplicateCouponCodeException para código já existente")
     void shouldThrowForDuplicateCode() {
         when(couponRepository.existsByCode("EXISTING")).thenReturn(true);
 

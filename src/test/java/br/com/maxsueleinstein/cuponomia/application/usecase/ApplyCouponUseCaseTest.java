@@ -45,16 +45,16 @@ class ApplyCouponUseCaseTest {
     }
 
     private Coupon createTestCoupon(DiscountType type, BigDecimal value, List<br.com.maxsueleinstein.cuponomia.domain.rule.CouponRule> rules) {
-        return new Coupon(couponId, new CouponCode("SAVE10"), "Test", type, value,
+        return new Coupon(couponId, new CouponCode("SAVE10"), "Teste", type, value,
                 true, LocalDateTime.now(), LocalDateTime.now(), rules);
     }
 
     @Nested
-    @DisplayName("Successful application")
+    @DisplayName("Aplicação bem-sucedida")
     class SuccessfulApplication {
 
         @Test
-        @DisplayName("should apply fixed discount and register usage")
+        @DisplayName("deve aplicar desconto fixo e registrar o uso")
         void shouldApplyFixedDiscount() {
             Coupon coupon = createTestCoupon(DiscountType.FIXED, new BigDecimal("20.00"), List.of());
             when(couponRepository.findByCode("SAVE10")).thenReturn(Optional.of(coupon));
@@ -72,7 +72,7 @@ class ApplyCouponUseCaseTest {
         }
 
         @Test
-        @DisplayName("should apply percentage discount correctly")
+        @DisplayName("deve aplicar desconto percentual corretamente")
         void shouldApplyPercentageDiscount() {
             Coupon coupon = createTestCoupon(DiscountType.PERCENTAGE, new BigDecimal("15"), List.of());
             when(couponRepository.findByCode("SAVE10")).thenReturn(Optional.of(coupon));
@@ -90,11 +90,11 @@ class ApplyCouponUseCaseTest {
     }
 
     @Nested
-    @DisplayName("Validation failures")
+    @DisplayName("Falhas de validação")
     class ValidationFailures {
 
         @Test
-        @DisplayName("should return failure when coupon not found")
+        @DisplayName("deve lançar exceção quando o cupom não for encontrado")
         void shouldThrowWhenNotFound() {
             when(couponRepository.findByCode("INVALID")).thenReturn(Optional.empty());
 
@@ -104,7 +104,7 @@ class ApplyCouponUseCaseTest {
         }
 
         @Test
-        @DisplayName("should return failure when order below minimum")
+        @DisplayName("deve retornar falha quando o pedido está abaixo do valor mínimo")
         void shouldFailWhenBelowMinimum() {
             Coupon coupon = createTestCoupon(DiscountType.FIXED, BigDecimal.TEN,
                     List.of(new MinimumOrderValueRule(new BigDecimal("100"))));
@@ -123,7 +123,7 @@ class ApplyCouponUseCaseTest {
         }
 
         @Test
-        @DisplayName("should return failure when client already used coupon")
+        @DisplayName("deve retornar falha quando o cliente já utilizou o cupom")
         void shouldFailWhenAlreadyUsed() {
             Coupon coupon = createTestCoupon(DiscountType.FIXED, BigDecimal.TEN,
                     List.of(new SingleUsePerClientRule()));

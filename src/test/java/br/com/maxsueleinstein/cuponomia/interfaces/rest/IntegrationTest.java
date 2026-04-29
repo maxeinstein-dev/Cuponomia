@@ -18,15 +18,16 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for the complete REST API.
- * <p>
- * Uses the full Spring Boot context with H2 in-memory database and random port.
- * Each test method gets a fresh database via @DirtiesContext.
+ * Testes de integração para a API REST completa.
+ * 
+ * Utiliza o contexto completo do Spring Boot com banco H2 em memória e porta
+ * aleatória.
+ * Cada método de teste recebe um banco de dados limpo via @DirtiesContext.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@DisplayName("Integration Tests")
+@DisplayName("Testes de Integração")
 class IntegrationTest {
 
     @LocalServerPort
@@ -38,7 +39,7 @@ class IntegrationTest {
                 .build();
     }
 
-    // === Helper methods ===
+    // === Métodos auxiliares ===
 
     private CouponResponse createCoupon(String json) {
         return restClient().post()
@@ -59,6 +60,7 @@ class IntegrationTest {
     }
 
     private String fixedCouponJson() {
+        // Cupom de desconto fixo para uso nos testes
         return """
                 {
                     "code": "SAVE20",
@@ -92,10 +94,10 @@ class IntegrationTest {
 
     @Nested
     @DisplayName("POST /api/v1/coupons")
-    class CreateCouponIntegration {
+    class CreateCouponIntegration { // Testes de criação de cupom
 
         @Test
-        @DisplayName("should create a fixed discount coupon")
+        @DisplayName("deve criar um cupom de desconto fixo")
         void shouldCreateFixedCoupon() {
             CouponResponse body = createCoupon(fixedCouponJson());
 
@@ -110,7 +112,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should return 409 for duplicate code")
+        @DisplayName("deve retornar 409 para código duplicado")
         void shouldReturn409ForDuplicate() {
             createCoupon(fixedCouponJson());
 
@@ -120,7 +122,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should return 400 for missing required fields")
+        @DisplayName("deve retornar 400 para campos obrigatórios ausentes")
         void shouldReturn400ForMissingFields() {
             HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> restClient().post()
                     .uri("/api/v1/coupons")
@@ -137,7 +139,7 @@ class IntegrationTest {
     class ListCouponsIntegration {
 
         @Test
-        @DisplayName("should return empty list when no coupons exist")
+        @DisplayName("deve retornar lista vazia quando não há cupons")
         void shouldReturnEmptyList() {
             CouponResponse[] body = restClient().get()
                     .uri("/api/v1/coupons")
@@ -149,7 +151,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should list created coupons")
+        @DisplayName("deve listar os cupons criados")
         void shouldListCoupons() {
             createCoupon(fixedCouponJson());
             createCoupon(percentageCouponJson());
@@ -164,10 +166,10 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should filter by active status")
+        @DisplayName("deve filtrar por status ativo")
         void shouldFilterByActive() {
             createCoupon(fixedCouponJson());
-            // Deactivate SAVE20
+            // Desativa o cupom SAVE20
             restClient().patch()
                     .uri("/api/v1/coupons/SAVE20/deactivate")
                     .retrieve()
@@ -190,7 +192,7 @@ class IntegrationTest {
     class GetCouponIntegration {
 
         @Test
-        @DisplayName("should return coupon by code")
+        @DisplayName("deve retornar cupom pelo código")
         void shouldReturnByCode() {
             createCoupon(fixedCouponJson());
 
@@ -204,7 +206,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should return 404 for non-existent code")
+        @DisplayName("deve retornar 404 para código inexistente")
         void shouldReturn404() {
             HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> restClient().get()
                     .uri("/api/v1/coupons/NOTFOUND")
@@ -219,7 +221,7 @@ class IntegrationTest {
     class DeactivateCouponIntegration {
 
         @Test
-        @DisplayName("should deactivate coupon")
+        @DisplayName("deve desativar o cupom")
         void shouldDeactivate() {
             createCoupon(fixedCouponJson());
 
@@ -238,7 +240,7 @@ class IntegrationTest {
     class ApplyCouponIntegration {
 
         @Test
-        @DisplayName("should apply coupon successfully")
+        @DisplayName("deve aplicar o cupom com sucesso")
         void shouldApplyCouponSuccessfully() {
             createCoupon(fixedCouponJson());
 
@@ -258,7 +260,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail when order below minimum")
+        @DisplayName("deve falhar quando o pedido está abaixo do valor mínimo")
         void shouldFailBelowMinimum() {
             createCoupon(fixedCouponJson());
 
@@ -276,11 +278,11 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should prevent reuse by same client (single use rule)")
+        @DisplayName("deve impedir reutilização pelo mesmo cliente (regra de uso único)")
         void shouldPreventReuse() {
             createCoupon(fixedCouponJson());
 
-            // First use — should succeed
+            // Primeira utilização — deve ter sucesso
             ApplyCouponResponse first = applyCoupon("""
                     {
                         "couponCode": "SAVE20",
@@ -290,7 +292,7 @@ class IntegrationTest {
                     """);
             assertTrue(first.valid());
 
-            // Second use by same client — should fail
+            // Segunda utilização pelo mesmo cliente — deve falhar
             ApplyCouponResponse second = applyCoupon("""
                     {
                         "couponCode": "SAVE20",
@@ -303,7 +305,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should allow different clients to use same coupon")
+        @DisplayName("deve permitir que clientes diferentes usem o mesmo cupom")
         void shouldAllowDifferentClients() {
             createCoupon(fixedCouponJson());
 
@@ -328,7 +330,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should return 404 for non-existent coupon")
+        @DisplayName("deve retornar 404 para cupom inexistente")
         void shouldReturn404ForNonExistent() {
             HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> applyCoupon("""
                     {
@@ -341,7 +343,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail when coupon is deactivated")
+        @DisplayName("deve falhar quando o cupom está desativado")
         void shouldFailWhenDeactivated() {
             createCoupon(fixedCouponJson());
             restClient().patch()
@@ -362,7 +364,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should apply percentage discount correctly")
+        @DisplayName("deve aplicar desconto percentual corretamente")
         void shouldApplyPercentageCorrectly() {
             createCoupon(percentageCouponJson());
 
@@ -380,7 +382,7 @@ class IntegrationTest {
         }
 
         @Test
-        @DisplayName("should cap fixed discount at order total")
+        @DisplayName("deve limitar o desconto fixo ao total do pedido")
         void shouldCapFixedDiscountAtTotal() {
             createCoupon("""
                     {

@@ -12,11 +12,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Coupon Rules (Specification Pattern)")
+@DisplayName("Regras de Cupom (Specification Pattern)")
 class CouponRulesTest {
 
     private final Coupon coupon = new Coupon(
-            UUID.randomUUID(), new CouponCode("TEST"), "Test",
+            UUID.randomUUID(), new CouponCode("TEST"), "Teste",
             DiscountType.FIXED, BigDecimal.TEN, true,
             LocalDateTime.now(), LocalDateTime.now(), List.of()
     );
@@ -28,32 +28,32 @@ class CouponRulesTest {
         private final MinimumOrderValueRule rule = new MinimumOrderValueRule(new BigDecimal("100.00"));
 
         @Test
-        @DisplayName("should pass when order meets minimum")
+        @DisplayName("deve passar quando o pedido atinge o valor mínimo")
         void shouldPassWhenMeetsMinimum() {
             CheckoutContext ctx = new CheckoutContext("c1", new BigDecimal("100.00"), false, 0);
             assertTrue(rule.validate(coupon, ctx).isValid());
         }
 
         @Test
-        @DisplayName("should pass when order exceeds minimum")
+        @DisplayName("deve passar quando o pedido supera o valor mínimo")
         void shouldPassWhenExceedsMinimum() {
             CheckoutContext ctx = new CheckoutContext("c1", new BigDecimal("200.00"), false, 0);
             assertTrue(rule.validate(coupon, ctx).isValid());
         }
 
         @Test
-        @DisplayName("should fail when order below minimum")
+        @DisplayName("deve falhar quando o pedido está abaixo do valor mínimo")
         void shouldFailWhenBelowMinimum() {
             CheckoutContext ctx = new CheckoutContext("c1", new BigDecimal("50.00"), false, 0);
             ValidationResult result = rule.validate(coupon, ctx);
             assertFalse(result.isValid());
             String error = result.getErrors().get(0).toLowerCase();
             assertTrue(error.contains("abaixo") || error.contains("mínimo"),
-                    "Error should mention abaixo/mínimo. Got: " + error);
+                    "Mensagem de erro deve mencionar 'abaixo' ou 'mínimo'. Recebido: " + error);
         }
 
         @Test
-        @DisplayName("should reject non-positive minimum value")
+        @DisplayName("deve rejeitar valor mínimo não positivo")
         void shouldRejectNonPositiveMinimum() {
             assertThrows(IllegalArgumentException.class, () -> new MinimumOrderValueRule(BigDecimal.ZERO));
         }
@@ -64,7 +64,7 @@ class CouponRulesTest {
     class ExpirationDateRuleTest {
 
         @Test
-        @DisplayName("should pass when coupon is not expired")
+        @DisplayName("deve passar quando o cupom não está expirado")
         void shouldPassWhenNotExpired() {
             ExpirationDateRule rule = new ExpirationDateRule(LocalDateTime.now().plusDays(30));
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 0);
@@ -72,7 +72,7 @@ class CouponRulesTest {
         }
 
         @Test
-        @DisplayName("should fail when coupon is expired")
+        @DisplayName("deve falhar quando o cupom está expirado")
         void shouldFailWhenExpired() {
             ExpirationDateRule rule = new ExpirationDateRule(LocalDateTime.now().minusDays(1));
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 0);
@@ -82,7 +82,7 @@ class CouponRulesTest {
         }
 
         @Test
-        @DisplayName("should reject null expiration date")
+        @DisplayName("deve rejeitar data de expiração nula")
         void shouldRejectNullDate() {
             assertThrows(NullPointerException.class, () -> new ExpirationDateRule(null));
         }
@@ -95,14 +95,14 @@ class CouponRulesTest {
         private final SingleUsePerClientRule rule = new SingleUsePerClientRule();
 
         @Test
-        @DisplayName("should pass when client has not used coupon")
+        @DisplayName("deve passar quando o cliente ainda não usou o cupom")
         void shouldPassWhenNotUsed() {
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 0);
             assertTrue(rule.validate(coupon, ctx).isValid());
         }
 
         @Test
-        @DisplayName("should fail when client has already used coupon")
+        @DisplayName("deve falhar quando o cliente já usou o cupom")
         void shouldFailWhenAlreadyUsed() {
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, true, 0);
             ValidationResult result = rule.validate(coupon, ctx);
@@ -118,14 +118,14 @@ class CouponRulesTest {
         private final MaxUsageRule rule = new MaxUsageRule(100);
 
         @Test
-        @DisplayName("should pass when below max usages")
+        @DisplayName("deve passar quando o número de usos está abaixo do limite")
         void shouldPassWhenBelowMax() {
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 50);
             assertTrue(rule.validate(coupon, ctx).isValid());
         }
 
         @Test
-        @DisplayName("should fail when at max usages")
+        @DisplayName("deve falhar quando o número de usos atinge o limite máximo")
         void shouldFailWhenAtMax() {
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 100);
             ValidationResult result = rule.validate(coupon, ctx);
@@ -134,14 +134,14 @@ class CouponRulesTest {
         }
 
         @Test
-        @DisplayName("should fail when above max usages")
+        @DisplayName("deve falhar quando o número de usos supera o limite máximo")
         void shouldFailWhenAboveMax() {
             CheckoutContext ctx = new CheckoutContext("c1", BigDecimal.TEN, false, 101);
             assertFalse(rule.validate(coupon, ctx).isValid());
         }
 
         @Test
-        @DisplayName("should reject non-positive max uses")
+        @DisplayName("deve rejeitar limite máximo de usos não positivo")
         void shouldRejectNonPositiveMax() {
             assertThrows(IllegalArgumentException.class, () -> new MaxUsageRule(0));
             assertThrows(IllegalArgumentException.class, () -> new MaxUsageRule(-1));

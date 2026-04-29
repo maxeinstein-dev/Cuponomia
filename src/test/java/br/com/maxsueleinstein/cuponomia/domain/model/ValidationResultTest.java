@@ -7,11 +7,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("ValidationResult Value Object")
+@DisplayName("Value Object ValidationResult")
 class ValidationResultTest {
 
     @Test
-    @DisplayName("ok() should be valid with no errors")
+    @DisplayName("ok() deve ser válido sem erros")
     void okShouldBeValid() {
         ValidationResult result = ValidationResult.ok();
         assertTrue(result.isValid());
@@ -19,41 +19,41 @@ class ValidationResultTest {
     }
 
     @Test
-    @DisplayName("fail() should be invalid with error message")
+    @DisplayName("fail() deve ser inválido com mensagem de erro")
     void failShouldBeInvalid() {
-        ValidationResult result = ValidationResult.fail("Some error");
+        ValidationResult result = ValidationResult.fail("Algum erro");
         assertFalse(result.isValid());
-        assertEquals(List.of("Some error"), result.getErrors());
+        assertEquals(List.of("Algum erro"), result.getErrors());
     }
 
     @Test
-    @DisplayName("combining two ok results should be ok")
+    @DisplayName("combinar dois resultados ok deve resultar em ok")
     void combineTwoOkShouldBeOk() {
         ValidationResult combined = ValidationResult.ok().combine(ValidationResult.ok());
         assertTrue(combined.isValid());
     }
 
     @Test
-    @DisplayName("combining ok with fail should be fail")
+    @DisplayName("combinar ok com falha deve resultar em falha")
     void combineOkWithFailShouldBeFail() {
-        ValidationResult combined = ValidationResult.ok().combine(ValidationResult.fail("Error"));
+        ValidationResult combined = ValidationResult.ok().combine(ValidationResult.fail("Erro"));
         assertFalse(combined.isValid());
-        assertEquals(List.of("Error"), combined.getErrors());
+        assertEquals(List.of("Erro"), combined.getErrors());
     }
 
     @Test
-    @DisplayName("combining two fails should accumulate errors")
+    @DisplayName("combinar duas falhas deve acumular os erros")
     void combineTwoFailsShouldAccumulate() {
-        ValidationResult combined = ValidationResult.fail("Error 1")
-                .combine(ValidationResult.fail("Error 2"));
+        ValidationResult combined = ValidationResult.fail("Erro 1")
+                .combine(ValidationResult.fail("Erro 2"));
         assertFalse(combined.isValid());
-        assertEquals(List.of("Error 1", "Error 2"), combined.getErrors());
+        assertEquals(List.of("Erro 1", "Erro 2"), combined.getErrors());
     }
 
     @Test
-    @DisplayName("errors list should be immutable")
+    @DisplayName("a lista de erros deve ser imutável")
     void errorsShouldBeImmutable() {
-        ValidationResult result = ValidationResult.fail("Error");
-        assertThrows(UnsupportedOperationException.class, () -> result.getErrors().add("Another"));
+        ValidationResult result = ValidationResult.fail("Erro");
+        assertThrows(UnsupportedOperationException.class, () -> result.getErrors().add("Outro"));
     }
 }

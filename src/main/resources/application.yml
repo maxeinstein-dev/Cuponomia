@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: Cuponomia
+  profiles:
+    active: dev
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method

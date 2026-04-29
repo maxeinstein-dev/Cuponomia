@@ -20,7 +20,7 @@ import java.util.UUID;
 
 /**
  * Maps between domain models and DTOs.
- * <p>
+ * 
  * Centralizes all conversion logic to keep controllers and use cases clean.
  */
 @Component
@@ -43,8 +43,7 @@ public class CouponMapper {
                 true,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                rules
-        );
+                rules);
     }
 
     /**
@@ -60,13 +59,13 @@ public class CouponMapper {
                 coupon.isActive(),
                 buildRulesResponse(coupon.getRules()),
                 coupon.getCreatedAt(),
-                coupon.getUpdatedAt()
-        );
+                coupon.getUpdatedAt());
     }
 
     private List<CouponRule> buildRules(CreateCouponRequest.RulesRequest rulesRequest) {
         List<CouponRule> rules = new ArrayList<>();
-        if (rulesRequest == null) return rules;
+        if (rulesRequest == null)
+            return rules;
 
         if (rulesRequest.minimumOrderValue() != null
                 && rulesRequest.minimumOrderValue().compareTo(BigDecimal.ZERO) > 0) {

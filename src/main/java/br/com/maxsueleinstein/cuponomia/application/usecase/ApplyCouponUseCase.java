@@ -15,19 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 /**
- * Use case: apply a coupon to a checkout.
- * <p>
- * Orchestrates:
- * 1. Coupon lookup
- * 2. Context enrichment (loads usage data for rule validation)
- * 3. Rule validation (all rules evaluated for comprehensive feedback)
- * 4. Discount calculation
- * 5. Usage registration
- * <p>
- * Uses @Transactional to ensure atomicity between validation and usage
- * recording,
- * preventing race conditions where two threads validate the same single-use
- * coupon.
+ * Caso de uso: aplicar um cupom a um checkout.
+ * 
+ * Orquestra:
+ * 1. Busca do cupom pelo código
+ * 2. Enriquecimento do contexto (carrega dados de uso para validação das
+ * regras)
+ * 3. Validação das regras (todas avaliadas para feedback completo)
+ * 4. Cálculo do desconto
+ * 5. Registro do uso
+ * 
+ * Utiliza @Transactional para garantir atomicidade entre a validação e o
+ * registro do uso, prevenindo condições de corrida onde duas threads validam
+ * o mesmo cupom de uso único simultaneamente.
  */
 @Service
 public class ApplyCouponUseCase {
@@ -43,12 +43,12 @@ public class ApplyCouponUseCase {
 
         @Transactional
         public ApplyCouponResponse execute(ApplyCouponRequest request) {
-                // 1. Lookup coupon by code
+                // 1. Busca o cupom pelo código
                 String code = request.couponCode().trim().toUpperCase();
                 Coupon coupon = couponRepository.findByCode(code)
                                 .orElseThrow(() -> new CouponNotFoundException(code));
 
-                // 2. Enrich checkout context with usage data
+                // 2. Enriquece o contexto de checkout com dados de uso
                 boolean clientAlreadyUsed = couponUsageRepository
                                 .existsByCouponIdAndClientId(coupon.getId(), request.clientId());
                 long totalUsages = couponUsageRepository.countByCouponId(coupon.getId());
@@ -59,18 +59,18 @@ public class ApplyCouponUseCase {
                                 clientAlreadyUsed,
                                 totalUsages);
 
-                // 3. Validate all rules
+                // 3. Valida todas as regras
                 ValidationResult result = coupon.validate(context);
 
                 if (!result.isValid()) {
                         return ApplyCouponResponse.failure(code, request.orderTotal(), result.getErrors());
                 }
 
-                // 4. Calculate discount
+                // 4. Calcula o desconto
                 BigDecimal discount = coupon.applyDiscount(request.orderTotal());
                 BigDecimal finalTotal = request.orderTotal().subtract(discount);
 
-                // 5. Register usage
+                // 5. Registra o uso
                 CouponUsage usage = CouponUsage.create(
                                 coupon.getId(), request.clientId(),
                                 request.orderTotal(), discount);

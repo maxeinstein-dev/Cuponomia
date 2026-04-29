@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Use case: deactivate a coupon by its code.
- * Deactivated coupons cannot be used in checkout.
+ * Caso de Uso: desativar um cupom por seu código.
+ * Cupons desativados não podem ser usados no checkout.
  */
 @Service
 public class DeactivateCouponUseCase {

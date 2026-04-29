@@ -13,15 +13,15 @@ import java.math.BigDecimal;
 @Schema(description = "Dados para aplicar um cupom no checkout")
 public record ApplyCouponRequest(
         @NotBlank(message = "O código do cupom é obrigatório")
-        @Schema(description = "Código do cupom a ser aplicado", example = "MAX100")
+        @Schema(description = "Código do cupom a ser aplicado", example = "MAX50")
         String couponCode,
 
         @NotBlank(message = "O ID do cliente é obrigatório")
-        @Schema(description = "Identificador único do cliente", example = "rafa-caceres")
+        @Schema(description = "Identificador único do cliente", example = "Taller")
         String clientId,
 
         @NotNull(message = "O valor total do pedido é obrigatório")
         @Positive(message = "O valor total do pedido deve ser positivo")
-        @Schema(description = "Valor total do pedido em reais", example = "8000.00")
+        @Schema(description = "Valor total do pedido em reais", example = "16000.00")
         BigDecimal orderTotal
 ) {}

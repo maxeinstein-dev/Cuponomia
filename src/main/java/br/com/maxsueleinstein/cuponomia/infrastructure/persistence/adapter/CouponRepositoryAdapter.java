@@ -20,10 +20,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Adapter that implements the domain CouponRepository port using Spring Data JPA.
- * <p>
- * Handles conversion between domain Coupon and JPA CouponEntity.
- * This is the only place where JPA-specific code touches domain objects.
+ * Adaptador que implementa o port CouponRepository do domínio usando Spring
+ * Data JPA.
+ * 
+ * Gerencia a conversão entre o Coupon do domínio e a CouponEntity do JPA.
+ * Este é o único lugar onde código específico do JPA toca nos objetos de
+ * domínio.
  */
 @Component
 public class CouponRepositoryAdapter implements CouponRepository {
@@ -37,7 +39,7 @@ public class CouponRepositoryAdapter implements CouponRepository {
     @Override
     public Coupon save(Coupon coupon) {
         CouponEntity entity;
-        // Check if this is an update (entity already exists in DB)
+        // Verifica se é uma atualização (a entidade já existe no banco)
         Optional<CouponEntity> existing = jpaRepository.findById(coupon.getId());
         if (existing.isPresent()) {
             entity = existing.get();
@@ -74,14 +76,14 @@ public class CouponRepositoryAdapter implements CouponRepository {
         return jpaRepository.existsByCode(code);
     }
 
-    // === Mapping methods ===
+    // === Métodos de Mapeamento ===
 
     private void updateEntity(CouponEntity entity, Coupon coupon) {
         entity.setDescription(coupon.getDescription());
         entity.setActive(coupon.isActive());
         entity.setUpdatedAt(coupon.getUpdatedAt());
 
-        // Reset rules and re-apply
+        // Reseta as regras e aplica novamente
         entity.setMinimumOrderValue(null);
         entity.setExpiresAt(null);
         entity.setSingleUsePerClient(false);
@@ -111,7 +113,7 @@ public class CouponRepositoryAdapter implements CouponRepository {
         entity.setCreatedAt(coupon.getCreatedAt());
         entity.setUpdatedAt(coupon.getUpdatedAt());
 
-        // Flatten rules into entity columns
+        // Transforma as regras em colunas da entidade (flattening)
         for (CouponRule rule : coupon.getRules()) {
             if (rule instanceof MinimumOrderValueRule r) {
                 entity.setMinimumOrderValue(r.getMinimumValue());
@@ -153,7 +155,6 @@ public class CouponRepositoryAdapter implements CouponRepository {
                 entity.isActive(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
-                rules
-        );
+                rules);
     }
 }

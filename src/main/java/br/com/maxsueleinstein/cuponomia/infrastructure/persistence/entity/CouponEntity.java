@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * JPA entity for coupons.
- * <p>
- * Separated from the domain Coupon entity to avoid JPA annotations
- * leaking into the domain layer (Hexagonal Architecture principle).
+ * Entidade JPA para os cupons.
+ * 
+ * Separada da entidade de domínio Coupon para evitar que anotações JPA
+ * vazem para a camada de domínio (princípio da Arquitetura Hexagonal).
  */
 @Entity
 @Table(name = "coupons")
@@ -36,7 +36,7 @@ public class CouponEntity {
     @Column(name = "active", nullable = false)
     private boolean active;
 
-    // Rule fields stored as columns (simple and queryable)
+    // Campos de regras armazenados como colunas (simples e fáceis de consultar)
     @Column(name = "minimum_order_value", precision = 12, scale = 2)
     private BigDecimal minimumOrderValue;
 
@@ -62,46 +62,111 @@ public class CouponEntity {
     public CouponEntity() {
     }
 
-    // Getters and setters for JPA
+    // Getters e setters para o JPA
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getCode() {
+        return code;
+    }
 
-    public DiscountTypeJpa getDiscountType() { return discountType; }
-    public void setDiscountType(DiscountTypeJpa discountType) { this.discountType = discountType; }
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-    public BigDecimal getDiscountValue() { return discountValue; }
-    public void setDiscountValue(BigDecimal discountValue) { this.discountValue = discountValue; }
+    public String getDescription() {
+        return description;
+    }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public BigDecimal getMinimumOrderValue() { return minimumOrderValue; }
-    public void setMinimumOrderValue(BigDecimal minimumOrderValue) { this.minimumOrderValue = minimumOrderValue; }
+    public DiscountTypeJpa getDiscountType() {
+        return discountType;
+    }
 
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+    public void setDiscountType(DiscountTypeJpa discountType) {
+        this.discountType = discountType;
+    }
 
-    public boolean isSingleUsePerClient() { return singleUsePerClient; }
-    public void setSingleUsePerClient(boolean singleUsePerClient) { this.singleUsePerClient = singleUsePerClient; }
+    public BigDecimal getDiscountValue() {
+        return discountValue;
+    }
 
-    public Integer getMaxUsages() { return maxUsages; }
-    public void setMaxUsages(Integer maxUsages) { this.maxUsages = maxUsages; }
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public boolean isActive() {
+        return active;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
+    public BigDecimal getMinimumOrderValue() {
+        return minimumOrderValue;
+    }
+
+    public void setMinimumOrderValue(BigDecimal minimumOrderValue) {
+        this.minimumOrderValue = minimumOrderValue;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public boolean isSingleUsePerClient() {
+        return singleUsePerClient;
+    }
+
+    public void setSingleUsePerClient(boolean singleUsePerClient) {
+        this.singleUsePerClient = singleUsePerClient;
+    }
+
+    public Integer getMaxUsages() {
+        return maxUsages;
+    }
+
+    public void setMaxUsages(Integer maxUsages) {
+        this.maxUsages = maxUsages;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
     public enum DiscountTypeJpa {
         FIXED, PERCENTAGE

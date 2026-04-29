@@ -8,16 +8,13 @@ import java.util.UUID;
 
 /**
  * JPA entity for coupon usage records.
- * <p>
+ * 
  * UNIQUE constraint on (coupon_id, client_id) enforces single-use-per-client
  * at the database level as a safety net against race conditions.
  */
 @Entity
-@Table(name = "coupon_usages",
-       uniqueConstraints = @UniqueConstraint(
-               name = "uk_coupon_usage_coupon_client",
-               columnNames = {"coupon_id", "client_id"}
-       ))
+@Table(name = "coupon_usages", uniqueConstraints = @UniqueConstraint(name = "uk_coupon_usage_coupon_client", columnNames = {
+        "coupon_id", "client_id" }))
 public class CouponUsageEntity {
 
     @Id
@@ -44,21 +41,51 @@ public class CouponUsageEntity {
 
     // Getters and setters for JPA
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getCouponId() { return couponId; }
-    public void setCouponId(UUID couponId) { this.couponId = couponId; }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    public String getClientId() { return clientId; }
-    public void setClientId(String clientId) { this.clientId = clientId; }
+    public UUID getCouponId() {
+        return couponId;
+    }
 
-    public BigDecimal getOrderTotal() { return orderTotal; }
-    public void setOrderTotal(BigDecimal orderTotal) { this.orderTotal = orderTotal; }
+    public void setCouponId(UUID couponId) {
+        this.couponId = couponId;
+    }
 
-    public BigDecimal getDiscountApplied() { return discountApplied; }
-    public void setDiscountApplied(BigDecimal discountApplied) { this.discountApplied = discountApplied; }
+    public String getClientId() {
+        return clientId;
+    }
 
-    public LocalDateTime getUsedAt() { return usedAt; }
-    public void setUsedAt(LocalDateTime usedAt) { this.usedAt = usedAt; }
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public BigDecimal getOrderTotal() {
+        return orderTotal;
+    }
+
+    public void setOrderTotal(BigDecimal orderTotal) {
+        this.orderTotal = orderTotal;
+    }
+
+    public BigDecimal getDiscountApplied() {
+        return discountApplied;
+    }
+
+    public void setDiscountApplied(BigDecimal discountApplied) {
+        this.discountApplied = discountApplied;
+    }
+
+    public LocalDateTime getUsedAt() {
+        return usedAt;
+    }
+
+    public void setUsedAt(LocalDateTime usedAt) {
+        this.usedAt = usedAt;
+    }
 }

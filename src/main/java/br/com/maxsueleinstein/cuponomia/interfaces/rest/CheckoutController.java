@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller for checkout operations.
- * <p>
- * Handles coupon application during checkout with comprehensive validation feedback.
+ * 
+ * Handles coupon application during checkout with comprehensive validation
+ * feedback.
  */
 @RestController
 @RequestMapping("/api/v1/checkout")
@@ -31,8 +32,7 @@ public class CheckoutController {
     }
 
     @PostMapping("/apply-coupon")
-    @Operation(summary = "Aplicar cupom no checkout",
-            description = "Valida e aplica um cupom ao pedido informado. Retorna os detalhes do desconto ou os erros de validação.")
+    @Operation(summary = "Aplicar cupom no checkout", description = "Valida e aplica um cupom ao pedido informado. Retorna os detalhes do desconto ou os erros de validação.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Cupom processado (verifique o campo 'valid' para o resultado)"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),

@@ -13,12 +13,12 @@ import java.util.UUID;
 
 /**
  * Entidade de domínio rica representando um cupom.
- * 
+ *
  * Encapsula lógica de negócio para:
  * - Cálculo de desconto (fixo ou percentual)
  * - Validação de regras via Specification Pattern
  * - Gerenciamento de ciclo de vida (ativação/desativação)
- * 
+ *
  * Invariantes garantidas:
  * - O valor do desconto deve ser positivo
  * - Desconto percentual deve estar entre 0 (exclusivo) e 100 (inclusivo)
@@ -115,6 +115,7 @@ public class Coupon {
     public void addRule(CouponRule rule) {
         Objects.requireNonNull(rule, "A regra não pode ser nula");
         this.rules.add(rule);
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters (sem setters — entidade rica com mutação controlada)

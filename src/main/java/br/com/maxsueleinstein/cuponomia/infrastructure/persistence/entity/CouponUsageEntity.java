@@ -1,6 +1,8 @@
 package br.com.maxsueleinstein.cuponomia.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +15,8 @@ import java.util.UUID;
  * at the database level as a safety net against race conditions.
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "coupon_usages", uniqueConstraints = @UniqueConstraint(name = "uk_coupon_usage_coupon_client", columnNames = {
         "coupon_id", "client_id" }))
 public class CouponUsageEntity {
@@ -37,55 +41,5 @@ public class CouponUsageEntity {
     private LocalDateTime usedAt;
 
     public CouponUsageEntity() {
-    }
-
-    // Getters and setters for JPA
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getCouponId() {
-        return couponId;
-    }
-
-    public void setCouponId(UUID couponId) {
-        this.couponId = couponId;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public BigDecimal getOrderTotal() {
-        return orderTotal;
-    }
-
-    public void setOrderTotal(BigDecimal orderTotal) {
-        this.orderTotal = orderTotal;
-    }
-
-    public BigDecimal getDiscountApplied() {
-        return discountApplied;
-    }
-
-    public void setDiscountApplied(BigDecimal discountApplied) {
-        this.discountApplied = discountApplied;
-    }
-
-    public LocalDateTime getUsedAt() {
-        return usedAt;
-    }
-
-    public void setUsedAt(LocalDateTime usedAt) {
-        this.usedAt = usedAt;
     }
 }

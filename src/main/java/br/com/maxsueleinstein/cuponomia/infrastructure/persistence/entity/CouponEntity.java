@@ -1,6 +1,8 @@
 package br.com.maxsueleinstein.cuponomia.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +15,8 @@ import java.util.UUID;
  * vazem para a camada de domínio (princípio da Arquitetura Hexagonal).
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "coupons")
 public class CouponEntity {
 
@@ -60,112 +64,6 @@ public class CouponEntity {
     private Long version;
 
     public CouponEntity() {
-    }
-
-    // Getters e setters para o JPA
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public DiscountTypeJpa getDiscountType() {
-        return discountType;
-    }
-
-    public void setDiscountType(DiscountTypeJpa discountType) {
-        this.discountType = discountType;
-    }
-
-    public BigDecimal getDiscountValue() {
-        return discountValue;
-    }
-
-    public void setDiscountValue(BigDecimal discountValue) {
-        this.discountValue = discountValue;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public BigDecimal getMinimumOrderValue() {
-        return minimumOrderValue;
-    }
-
-    public void setMinimumOrderValue(BigDecimal minimumOrderValue) {
-        this.minimumOrderValue = minimumOrderValue;
-    }
-
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-
-    public boolean isSingleUsePerClient() {
-        return singleUsePerClient;
-    }
-
-    public void setSingleUsePerClient(boolean singleUsePerClient) {
-        this.singleUsePerClient = singleUsePerClient;
-    }
-
-    public Integer getMaxUsages() {
-        return maxUsages;
-    }
-
-    public void setMaxUsages(Integer maxUsages) {
-        this.maxUsages = maxUsages;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
     }
 
     public enum DiscountTypeJpa {

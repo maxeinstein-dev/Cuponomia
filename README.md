@@ -1,237 +1,157 @@
-# 🎟️ Cuponomia — Sistema de Cupons com Regras Dinâmicas
+# Cuponomia Microservices
 
-Sistema de cupons de desconto com regras dinâmicas para aplicação no checkout, construído com **Java 25**, **Spring Boot 4.0.6**, seguindo **Clean Architecture (Hexagonal)**, **DDD** e **TDD**.
+Cuponomia e um sistema de cupons de desconto dividido em microservicos. Ele separa a escrita da gestao de cupons do caminho de checkout, usa Kafka para propagacao de eventos e mantem uma projecao local de dados para deixar a validacao mais rapida e resiliente.
 
-## 📋 Índice
+## O Que O Projeto Faz
 
-- [Funcionalidades](#-funcionalidades)
-- [Arquitetura](#-arquitetura)
-- [Decisões Técnicas](#-decisões-técnicas)
-- [Como Rodar](#-como-rodar)
-- [API Endpoints](#-api-endpoints)
-- [Dados de Exemplo](#-dados-de-exemplo)
-- [Exemplos de Uso](#-exemplos-de-uso)
-- [Testes](#-testes)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
+O projeto permite criar, listar, buscar e desativar cupons em um servico de gestao, enquanto um segundo servico valida e aplica o cupom no checkout.
 
----
+Fluxo principal:
 
-## ✨ Funcionalidades
+1. O `coupon-management-service` recebe a requisicao de criacao ou desativacao de cupom.
+2. O cupom e persistido no banco do servico de gestao.
+3. Depois do commit da transacao, o servico publica um evento no Kafka.
+4. O `coupon-validation-service` consome esse evento e atualiza sua projecao local.
+5. O checkout consulta o servico de validacao para aplicar o cupom.
 
-### 🏷️ Gerenciamento de Cupons
+Essa separacao permite que a validacao continue funcionando com a ultima projecao recebida, mesmo se o servico de gestao estiver indisponivel por um periodo curto.
 
-- **Criar cupom** com código único (3–30 caracteres alfanuméricos), tipo e valor de desconto:
-  - **FIXED** — desconto de valor fixo em reais (ex: R$ 20,00). Limitado ao total do pedido (nunca gera valor negativo).
-  - **PERCENTAGE** — desconto percentual (1% a 100%). Calculado sobre o total do pedido com precisão de 2 casas decimais.
-- **Listar cupons** com filtro opcional por status (`active=true` / `active=false`).
-- **Buscar cupom** pelo código único.
-- **Desativar cupom** via PATCH, impedindo seu uso em novos checkouts sem excluí-lo do banco.
+## Estrutura Da Solucao
 
-### 📏 Regras Dinâmicas e Composáveis
+| Modulo                      | Responsabilidade                                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `coupon-management-service` | API de administracao de cupons, regras de negocio, persistencia, publicacao de eventos Kafka e documentacao Swagger. |
+| `coupon-validation-service` | API de checkout, validacao de cupom, consumo de eventos Kafka, persistencia local e documentacao Swagger.            |
+| `coupon-contracts`          | Contratos compartilhados de eventos entre os servicos.                                                               |
 
-As regras são implementadas com o **Specification Pattern**: cada regra é uma classe independente. Um cupom pode ter zero ou mais regras combinadas. Todas são avaliadas e os erros são acumulados — a API retorna **todos os motivos de rejeição** de uma vez, não apenas o primeiro.
+O projeto segue uma organizacao em camadas dentro de cada servico:
 
-| Regra | Descrição |
-|---|---|
-| **Valor mínimo do pedido** | O pedido deve atingir um valor mínimo em reais para o cupom ser válido. |
-| **Expiração por data** | O cupom só é válido até uma data/hora específica. Após esse momento, é recusado automaticamente. |
-| **Uso único por cliente** | Cada `clientId` só pode usar o cupom uma vez. Tentativas de reuso são bloqueadas na aplicação **e** por constraint `UNIQUE` no banco de dados. |
-| **Limite máximo de usos** | O cupom tem um número máximo de utilizações totais. Ao atingir o limite, passa a ser recusado para qualquer cliente. |
+- `interfaces` para controllers REST e handlers de erro.
+- `application` para casos de uso, DTOs, mappers e portas de aplicacao.
+- `domain` para entidades, regras e excecoes de negocio.
+- `infrastructure` para JPA, Kafka, configuracao e adaptadores externos.
 
-### 🛒 Checkout com Feedback Detalhado
+## Como A Solucao Esta Montada
 
-O endpoint de checkout **não lança erros 4xx** para cupons inválidos — retorna sempre `200 OK` com o campo `valid` indicando o resultado. Isso permite que o front-end exiba mensagens amigáveis sem tratar exceções.
-
-```json
-// Cupom válido
-{
-  "valid": true,
-  "couponCode": "MAX50",
-  "originalTotal": 16000.00,
-  "discountApplied": 8000.00,
-  "finalTotal": 8000.00,
-  "message": "Cupom aplicado com sucesso! Você economizou R$ 8000.00",
-  "errors": []
-}
-
-// Cupom inválido (todos os erros retornados juntos)
-{
-  "valid": false,
-  "couponCode": "EXPIRADO20",
-  "originalTotal": 50.00,
-  "discountApplied": 0,
-  "finalTotal": 50.00,
-  "message": "Falha na validação do cupom",
-  "errors": [
-    "O cupom expirou em 2025-01-01T00:00",
-    "Pedido abaixo do valor mínimo de R$ 100,00"
-  ]
-}
+```text
+.
+|-- coupon-contracts
+|   `-- src/main/java/.../contracts/event
+|-- coupon-management-service
+|   |-- src/main/java/.../application
+|   |-- src/main/java/.../domain
+|   |-- src/main/java/.../infrastructure
+|   `-- src/main/java/.../interfaces
+|-- coupon-validation-service
+|   |-- src/main/java/.../application
+|   |-- src/main/java/.../domain
+|   |-- src/main/java/.../infrastructure
+|   `-- src/main/java/.../interfaces
+|-- scripts
+|   `-- run-affected-tests.ps1
+|-- .githooks
+|   `-- pre-commit
+|-- docker-compose.yml
+|-- Dockerfile
+`-- pom.xml
 ```
 
-### 🔒 Segurança Contra Reuso Inválido
+## Stack
 
-Proteção em duas camadas para cupons de uso único:
-1. **Camada de aplicação:** consulta o histórico de uso antes de calcular o desconto.
-2. **Camada de banco:** constraint `UNIQUE (coupon_id, client_id)` impede gravações duplicadas mesmo em cenários de alta concorrência (race conditions).
+- Java 25
+- Spring Boot 4.0.6
+- Maven com multi-module build
+- Kafka para eventos
+- Postgres por servico
+- H2 para testes locais quando aplicavel
 
-### 📋 Auditoria de Uso
+## Como Rodar
 
-Cada uso de cupom é registrado com: `couponCode`, `clientId`, `orderTotal`, `discountApplied` e `usedAt`. Isso garante rastreabilidade completa para fins de auditoria e analytics.
-
-### 📖 API REST Documentada
-
-Documentação interativa disponível via **Swagger UI** em `/swagger-ui.html`. Todos os endpoints possuem descrições, exemplos de request/response e códigos de status documentados.
-
-### 🌱 Dados Iniciais (Seed)
-
-No perfil `dev`, a aplicação inicializa automaticamente com cupons de exemplo cobrindo todos os cenários: desconto fixo, percentual, expirado, inativo, com e sem regras.
-
----
-
-## 🏗️ Arquitetura
-
-O projeto segue **Arquitetura Hexagonal (Ports & Adapters)** com separação clara de camadas:
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   interfaces/                       │
-│          Controllers REST (thin)                    │
-│          GlobalExceptionHandler                     │
-├─────────────────────────────────────────────────────┤
-│                  application/                       │
-│          Use Cases (orquestração)                   │
-│          DTOs, Mappers                              │
-├─────────────────────────────────────────────────────┤
-│                    domain/                          │
-│          Entidades ricas, Value Objects             │
-│          Regras (Specification Pattern)             │
-│          Ports (interfaces de repositório)          │
-├─────────────────────────────────────────────────────┤
-│                infrastructure/                      │
-│          JPA Entities + Adapters                    │
-│          Spring Data Repositories                   │
-│          Configurações                              │
-└─────────────────────────────────────────────────────┘
-```
-
-**Princípio fundamental:** O domínio **nunca** depende de frameworks. As interfaces de repositório (Ports) são definidas no domínio; as implementações (Adapters) vivem na infraestrutura.
-
----
-
-## 🧠 Decisões Técnicas
-
-### UUID para IDs
-
-IDs sequenciais (Long) permitiriam ataques de enumeração — um atacante poderia adivinhar IDs de cupons válidos. UUID elimina esse vetor de ataque e permite geração sem dependência do banco.
-
-### Strategy Pattern para tipos de desconto
-
-Novos tipos de desconto (frete grátis, desconto progressivo) podem ser adicionados criando apenas uma nova classe, sem alterar código existente (Open/Closed Principle).
-
-### Specification Pattern para regras
-
-Cada regra é uma classe independente que implementa `CouponRule`. Regras são compostas via `ValidationResult.combine()`, acumulando todas as violações para feedback claro ao usuário. Adicionar uma nova regra requer zero alteração em código existente.
-
-### Entidades JPA separadas do domínio
-
-`CouponEntity` (JPA) e `Coupon` (domínio) são classes distintas. O Adapter faz a conversão. Isso evita anotações JPA no domínio, mantendo-o puro e testável.
-
-### Entidades ricas (não anêmicas)
-
-A entidade `Coupon` encapsula lógica de negócio: cálculo de desconto, validação de regras, e gerenciamento de lifecycle. Controllers são thin — apenas delegam para use cases.
-
-### Segurança contra reuso
-
-- **Aplicação:** `SingleUsePerClientRule` + `CheckoutContext` enriquecido com dados de uso
-- **Banco:** Constraint UNIQUE em `(coupon_id, client_id)` na tabela `coupon_usages`
-- **Concorrência:** `@Version` (locking otimista) + `@Transactional` nos use cases
-- **Tratamento:** `DataIntegrityViolationException` convertida em resposta 409
-
----
-
-## 🚀 Como Rodar
-
-### Pré-requisitos
-
-- Java 25+
-- Maven 3.9+ (ou use o wrapper `./mvnw`)
-
-### Local (Profile: dev)
-
-```bash
-./mvnw spring-boot:run
-```
-
-A aplicação inicia em `http://localhost:8080` com:
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **H2 Console:** http://localhost:8080/h2-console (JDBC URL: `jdbc:h2:mem:cuponomia_dev`)
-
-> 💡 Ao iniciar, **7 cupons de exemplo** são carregados automaticamente via `data.sql` para testes rápidos.
-
-### Docker
+Subir toda a stack:
 
 ```bash
 docker compose up --build
 ```
 
-Acesse em `http://localhost:8080`.
+Servicos expostos:
 
-### Testes
+- Management Swagger: http://localhost:8081/swagger-ui.html
+- Validation Swagger: http://localhost:8082/swagger-ui.html
+- Kafka: `localhost:9092`
+- Postgres gestao: `localhost:5432`, database `coupon_management`
+- Postgres validacao: `localhost:5433`, database `coupon_validation`
+
+Rodar todos os testes:
 
 ```bash
 ./mvnw test
 ```
 
----
-
-## 📡 API Endpoints
-
-| Método | Path | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/v1/coupons` | Criar cupom |
-| `GET`  | `/api/v1/coupons` | Listar cupons (filtro `?active=true/false`) |
-| `GET`  | `/api/v1/coupons/{code}` | Buscar cupom por código |
-| `PATCH`| `/api/v1/coupons/{code}/deactivate` | Desativar cupom |
-| `POST` | `/api/v1/checkout/apply-coupon` | Aplicar cupom no checkout |
-
----
-
-## 📦 Dados de Exemplo
-
-Ao iniciar o projeto (profile `dev`), os seguintes cupons são criados automaticamente:
-
-| Código | Tipo | Valor | Cenário |
-|--------|------|-------|---------|
-| `BEMVINDO25` | Fixo | R$ 25 | Boas-vindas, uso único por cliente |
-| `VERAO15` | Percentual | 15% | Todas as regras ativas |
-| `PROMO10` | Fixo | R$ 10 | Sem regras extras |
-| `MEGA50` | Percentual | 50% | Limite de 50 usos, valor mínimo R$ 200 |
-| `EXPIRADO20` | Fixo | R$ 20 | Expirado (demonstra validação) |
-| `INATIVO30` | Percentual | 30% | Desativado (demonstra validação) |
-| `MAX50` | Percentual | 50% | 🎯 Easter Egg — veja abaixo! |
-
-### 🎯 Easter Egg: Cupom MAX50
-
-> 🚀 Use o cupom **MAX50** e tenha **50% de desconto** na sua contratação!
-
-Cupom especial com desconto de 50%. Teste no Swagger com:
-- **Cupom:** `MAX50`
-- **Cliente:** `Taller`
-- **Valor mínimo do pedido:** `16000.00`
-
----
-
-## 💡 Exemplos de Uso
-
-### Criar cupom com desconto fixo
+Rodar um modulo localmente:
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/coupons \
+./mvnw -pl coupon-management-service -am spring-boot:run
+./mvnw -pl coupon-validation-service -am spring-boot:run
+```
+
+## Fluxo De Testes Antes Do Commit
+
+O repositorio usa um hook de pre-commit para bloquear o commit ate os testes afetados passarem.
+
+### Como habilitar
+
+Depois de clonar o repositorio, configure o Git para usar os hooks versionados:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+No Windows, voce tambem pode usar:
+
+```powershell
+./scripts/install-git-hooks.ps1
+```
+
+### O Que O Hook Faz
+
+O arquivo `.githooks/pre-commit` chama `scripts/run-affected-tests.ps1 -Staged` antes de aceitar o commit.
+
+Esse script:
+
+- identifica apenas os arquivos staged;
+- roda somente os testes dos modulos impactados;
+- executa a suite completa se houver mudanca no `pom.xml` raiz ou em artefatos de build;
+- ignora mudancas apenas de documentacao, scripts ou comentarios em arquivos Java.
+
+Em outras palavras, se voce mudar apenas um comentario em um arquivo, o hook nao precisa rodar todos os testes do projeto.
+
+## Endpoints
+
+Gestao de cupons (`coupon-management-service`, porta `8081`):
+
+| Metodo  | Path                                | Descricao       |
+| ------- | ----------------------------------- | --------------- |
+| `POST`  | `/api/v1/coupons`                   | Criar cupom     |
+| `GET`   | `/api/v1/coupons`                   | Listar cupons   |
+| `GET`   | `/api/v1/coupons/{code}`            | Buscar cupom    |
+| `PATCH` | `/api/v1/coupons/{code}/deactivate` | Desativar cupom |
+
+Validacao de checkout (`coupon-validation-service`, porta `8082`):
+
+| Metodo | Path                            | Descricao               |
+| ------ | ------------------------------- | ----------------------- |
+| `POST` | `/api/v1/checkout/apply-coupon` | Validar e aplicar cupom |
+
+## Exemplo De Uso
+
+Criando um cupom no servico de gestao:
+
+```bash
+curl -X POST http://localhost:8081/api/v1/coupons \
   -H "Content-Type: application/json" \
   -d '{
-    "code": "ECONOMIZE20",
-    "description": "Desconto de R$ 20 em compras acima de R$ 100",
+    "code": "SAVE20",
+    "description": "Save R$ 20",
     "discountType": "FIXED",
     "discountValue": 20.00,
     "rules": {
@@ -241,162 +161,23 @@ curl -X POST http://localhost:8080/api/v1/coupons \
   }'
 ```
 
-### Criar cupom percentual com todas as regras
+Depois que o evento for consumido, valide no checkout:
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/coupons \
+curl -X POST http://localhost:8082/api/v1/checkout/apply-coupon \
   -H "Content-Type: application/json" \
   -d '{
-    "code": "VERAO25",
-    "description": "25% de desconto no verão",
-    "discountType": "PERCENTAGE",
-    "discountValue": 25,
-    "rules": {
-      "minimumOrderValue": 50.00,
-      "expiresAt": "2027-12-31T23:59:59",
-      "singleUsePerClient": true,
-      "maxUsages": 1000
-    }
-  }'
-```
-
-### Aplicar cupom no checkout
-
-```bash
-curl -X POST http://localhost:8080/api/v1/checkout/apply-coupon \
-  -H "Content-Type: application/json" \
-  -d '{
-    "couponCode": "ECONOMIZE20",
-    "clientId": "cliente-123",
+    "couponCode": "SAVE20",
+    "clientId": "client-1",
     "orderTotal": 150.00
   }'
 ```
 
-**Resposta de sucesso:**
-```json
-{
-  "valid": true,
-  "couponCode": "ECONOMIZE20",
-  "originalTotal": 150.00,
-  "discountApplied": 20.00,
-  "finalTotal": 130.00,
-  "message": "Cupom aplicado com sucesso! Você economizou R$ 20.00",
-  "errors": []
-}
-```
+## Pontos De Estudo
 
-**Resposta de falha (valor mínimo):**
-```json
-{
-  "valid": false,
-  "couponCode": "ECONOMIZE20",
-  "originalTotal": 50.00,
-  "discountApplied": 0,
-  "finalTotal": 50.00,
-  "message": "Falha na validação do cupom",
-  "errors": [
-    "O valor do pedido R$ 50.00 está abaixo do mínimo exigido de R$ 100.00"
-  ]
-}
-```
-
-**Resposta de falha (cupom já utilizado):**
-```json
-{
-  "valid": false,
-  "couponCode": "ECONOMIZE20",
-  "originalTotal": 150.00,
-  "discountApplied": 0,
-  "finalTotal": 150.00,
-  "message": "Falha na validação do cupom",
-  "errors": [
-    "O cliente 'cliente-123' já utilizou o cupom 'ECONOMIZE20'"
-  ]
-}
-```
-
-### Listar cupons ativos
-
-```bash
-curl http://localhost:8080/api/v1/coupons?active=true
-```
-
-### Buscar cupom por código
-
-```bash
-curl http://localhost:8080/api/v1/coupons/MAX50
-```
-
-### Desativar cupom
-
-```bash
-curl -X PATCH http://localhost:8080/api/v1/coupons/ECONOMIZE20/deactivate
-```
-
----
-
-## 🧪 Testes
-
-O projeto conta com **70 testes** (unitários e de integração) cobrindo:
-
-| Tipo | Escopo | Ferramenta |
-|------|--------|------------|
-| Unitário | Value Objects (CouponCode, ValidationResult) | JUnit 5 |
-| Unitário | Entidade Coupon (invariantes, cálculo, validação) | JUnit 5 |
-| Unitário | Regras (MinOrder, Expiration, SingleUse, MaxUsage) | JUnit 5 |
-| Unitário | Use Cases (Create, Apply) | JUnit 5 + Mockito |
-| Integração | API REST completa (fluxo criar→aplicar→verificar) | SpringBootTest + RestClient |
-
-```bash
-# Rodar todos os testes
-./mvnw test
-
-# Rodar com relatório detalhado
-./mvnw test -Dsurefire.useFile=false
-```
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-src/main/java/br/com/maxsueleinstein/cuponomia/
-├── CuponomiaApplication.java
-├── domain/
-│   ├── model/          # Entidades ricas e Value Objects
-│   ├── rule/           # Regras de validação (Specification Pattern)
-│   ├── exception/      # Exceções de domínio
-│   └── repository/     # Ports (interfaces)
-├── application/
-│   ├── usecase/        # Casos de uso
-│   ├── dto/            # DTOs de request/response
-│   └── mapper/         # Conversão Domain ↔ DTO
-├── infrastructure/
-│   ├── persistence/    # JPA Entities, Repositories, Adapters
-│   └── config/         # Configurações (OpenAPI)
-└── interfaces/
-    └── rest/           # Controllers REST + Exception Handler
-
-src/main/resources/
-├── application.yml          # Configuração geral
-├── application-dev.yml      # Profile dev (H2 + seed data)
-├── application-test.yml     # Profile test (isolado)
-└── data.sql                 # Dados iniciais de exemplo (7 cupons)
-```
-
----
-
-## 🛠️ Tecnologias
-
-- **Java 25** + **Spring Boot 4.0.6**
-- **Spring Data JPA** + **H2 Database** (Dev/Test) e **PostgreSQL** (Produção/Docker)
-- **Bean Validation** (Jakarta)
-- **SpringDoc OpenAPI** (Swagger)
-- **JUnit 5** + **Mockito**
-- **Docker** + **Docker Compose**
-
----
-
-## 📄 Licença
-
-Projeto desenvolvido como desafio técnico.
+- Banco por servico: cada microsservico possui seu proprio banco.
+- Comunicacao assincrona: gestao nao chama validacao por HTTP.
+- Projecao local: validacao le os cupons do seu proprio banco.
+- Escala independente: e possivel subir mais replicas apenas do `coupon-validation-service`.
+- Resiliencia parcial: se a gestao estiver fora, o checkout ainda pode validar cupons ja projetados.
+- Consistencia eventual: um cupom recem-criado pode levar alguns instantes ate aparecer na validacao.

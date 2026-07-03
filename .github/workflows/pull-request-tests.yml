@@ -4,6 +4,8 @@ on:
     pull_request:
         branches:
             - master
+        paths-ignore:
+            - "**/*.md"
 
 permissions:
     contents: read
@@ -31,4 +33,4 @@ jobs:
 
             - name: Run affected tests
               shell: pwsh
-              run: ./scripts/run-affected-tests.ps1 -BaseRef origin/${{ github.base_ref }}
+                            run: ./scripts/run-affected-tests.ps1 -BaseRef ${{ github.event.pull_request.base.sha }}

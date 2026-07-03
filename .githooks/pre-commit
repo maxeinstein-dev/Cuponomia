@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo "Running affected Maven tests before commit..."
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/run-affected-tests.ps1 -Staged
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo "Commit blocked because affected tests failed."
+  exit "$status"
+fi
+
+exit 0

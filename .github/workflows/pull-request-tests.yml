@@ -1,0 +1,34 @@
+name: Pull Request Tests
+
+on:
+    pull_request:
+        branches:
+            - master
+
+permissions:
+    contents: read
+
+concurrency:
+    group: pr-tests-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    affected-tests:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "25"
+                  cache: maven
+
+            - name: Run affected tests
+              shell: pwsh
+              run: ./scripts/run-affected-tests.ps1 -BaseRef origin/${{ github.base_ref }}

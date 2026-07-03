@@ -1,6 +1,7 @@
 package br.com.maxsueleinstein.cuponomia.interfaces.rest.handler;
 
 import br.com.maxsueleinstein.cuponomia.application.dto.ErrorResponse;
+import br.com.maxsueleinstein.cuponomia.domain.exception.CheckoutTimeoutException;
 import br.com.maxsueleinstein.cuponomia.domain.exception.CouponAlreadyUsedException;
 import br.com.maxsueleinstein.cuponomia.domain.exception.CouponNotFoundException;
 import br.com.maxsueleinstein.cuponomia.domain.exception.DuplicateCouponCodeException;
@@ -96,6 +97,14 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                                 .body(ErrorResponse.of(404, "Recurso Não Encontrado",
                                                 "O recurso solicitado não foi encontrado", request.getRequestURI()));
+        }
+
+        @ExceptionHandler(CheckoutTimeoutException.class)
+        public ResponseEntity<ErrorResponse> handleCheckoutTimeout(CheckoutTimeoutException ex,
+                        HttpServletRequest request) {
+                return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT)
+                                .body(ErrorResponse.of(504, "Tempo Esgotado", ex.getMessage(),
+                                                request.getRequestURI()));
         }
 
         @ExceptionHandler(Exception.class)

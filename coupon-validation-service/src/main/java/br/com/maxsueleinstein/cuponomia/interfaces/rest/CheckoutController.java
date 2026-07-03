@@ -2,7 +2,7 @@ package br.com.maxsueleinstein.cuponomia.interfaces.rest;
 
 import br.com.maxsueleinstein.cuponomia.application.dto.ApplyCouponRequest;
 import br.com.maxsueleinstein.cuponomia.application.dto.ApplyCouponResponse;
-import br.com.maxsueleinstein.cuponomia.application.usecase.ApplyCouponUseCase;
+import br.com.maxsueleinstein.cuponomia.application.usecase.CheckoutTimeoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletionStage;
 
 /**
  * REST controller for checkout operations.
@@ -25,10 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Checkout", description = "Operações de aplicação de cupom no checkout")
 public class CheckoutController {
 
-    private final ApplyCouponUseCase applyCouponUseCase;
+    private final CheckoutTimeoutService checkoutTimeoutService;
 
-    public CheckoutController(ApplyCouponUseCase applyCouponUseCase) {
-        this.applyCouponUseCase = applyCouponUseCase;
+    public CheckoutController(CheckoutTimeoutService checkoutTimeoutService) {
+        this.checkoutTimeoutService = checkoutTimeoutService;
     }
 
     @PostMapping("/apply-coupon")
@@ -38,8 +40,8 @@ public class CheckoutController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
             @ApiResponse(responseCode = "404", description = "Cupom não encontrado")
     })
-    public ResponseEntity<ApplyCouponResponse> applyCoupon(@Valid @RequestBody ApplyCouponRequest request) {
-        ApplyCouponResponse response = applyCouponUseCase.execute(request);
-        return ResponseEntity.ok(response);
+    public CompletionStage<ResponseEntity<ApplyCouponResponse>> applyCoupon(
+            @Valid @RequestBody ApplyCouponRequest request) {
+        return checkoutTimeoutService.execute(request).thenApply(ResponseEntity::ok);
     }
 }

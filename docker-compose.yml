@@ -1,45 +1,102 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: cuponomia-db
+  kafka:
+    image: bitnami/kafka:3.7
+    container_name: cuponomia-kafka
+    ports:
+      - "9092:9092"
     environment:
-      POSTGRES_DB: cuponomia
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+
+  management-db:
+    image: postgres:16-alpine
+    container_name: cuponomia-management-db
+    environment:
+      POSTGRES_DB: coupon_management
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - management-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d cuponomia"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coupon_management"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  cuponomia:
+  validation-db:
+    image: postgres:16-alpine
+    container_name: cuponomia-validation-db
+    environment:
+      POSTGRES_DB: coupon_validation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - validation-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coupon_validation"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  coupon-management-service:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cuponomia-app
+      args:
+        MODULE: coupon-management-service
+    container_name: coupon-management-service
     ports:
-      - "8081:8080"
+      - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/cuponomia
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://management-db:5432/coupon_management
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - JAVA_OPTS=-Xmx512m
     depends_on:
-      db:
+      management-db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 40s
+      kafka:
+        condition: service_started
+    restart: unless-stopped
+
+  coupon-validation-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: coupon-validation-service
+    container_name: coupon-validation-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://validation-db:5432/coupon_validation
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - JAVA_OPTS=-Xmx512m
+    depends_on:
+      validation-db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
-  postgres-data:
+  management-postgres-data:
+    driver: local
+  validation-postgres-data:
     driver: local

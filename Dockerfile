@@ -1,33 +1,34 @@
 # === Build stage ===
 FROM eclipse-temurin:25-jdk AS build
 
+ARG MODULE
 WORKDIR /app
 
-# Copy Maven wrapper and POM first (layer caching for dependencies)
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:resolve -q
+COPY coupon-contracts/pom.xml coupon-contracts/pom.xml
+COPY coupon-management-service/pom.xml coupon-management-service/pom.xml
+COPY coupon-validation-service/pom.xml coupon-validation-service/pom.xml
 
-# Copy source and build
-COPY src/ src/
-RUN ./mvnw clean package -DskipTests -q
+RUN chmod +x mvnw && ./mvnw -pl ${MODULE} -am dependency:resolve -q
+
+COPY coupon-contracts/src/ coupon-contracts/src/
+COPY coupon-management-service/src/ coupon-management-service/src/
+COPY coupon-validation-service/src/ coupon-validation-service/src/
+
+RUN ./mvnw -pl ${MODULE} -am clean package -DskipTests -q
 
 # === Runtime stage ===
 FROM eclipse-temurin:25-jre
 
+ARG MODULE
 WORKDIR /app
 
-# Create data directory for H2 file-based storage
-RUN mkdir -p /data
+COPY --from=build /app/${MODULE}/target/*.jar app.jar
 
-COPY --from=build /app/target/*.jar app.jar
-
-EXPOSE 8080
+EXPOSE 8081 8082
 
 ENV SPRING_PROFILES_ACTIVE=docker
 ENV JAVA_OPTS=""
-
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -2,6 +2,12 @@
 
 This guide is the fastest way to evaluate Cuponomia from a browser using Swagger UI.
 
+Published demo hub:
+
+```text
+https://cuponomia.maxsueleinstein.dev
+```
+
 ## 1. Start The Stack
 
 ```bash

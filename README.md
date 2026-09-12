@@ -6,6 +6,7 @@ Cuponomia is a coupon platform built as a small event-driven microservices syste
 
 The project is designed to be explored through Swagger:
 
+- Published demo hub: `https://cuponomia.maxsueleinstein.dev`
 - Management API Swagger: `http://localhost:8081/swagger-ui.html`
 - Validation API Swagger: `http://localhost:8082/swagger-ui.html`
 - Root redirects: `http://localhost:8081/` and `http://localhost:8082/` open each service's Swagger UI.

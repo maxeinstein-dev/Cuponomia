@@ -3,8 +3,11 @@ package br.com.maxsueleinstein.cuponomia.infrastructure.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * OpenAPI / Swagger configuration.
@@ -15,10 +18,12 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI cuponomiaOpenAPI() {
         return new OpenAPI()
+                .tags(List.of(
+                        new Tag().name("Checkout Validation").description("Apply coupons during checkout and inspect validation results."),
+                        new Tag().name("System").description("Service navigation and health helpers.")))
                 .info(new Info()
-                        .title("Cuponomia API")
-                        .description("Sistema de Cupons com Regras Dinâmicas — API REST para criação, "
-                                + "gerenciamento e aplicação de cupons de desconto no checkout.")
+                        .title("Cuponomia Validation API")
+                        .description("Checkout-facing coupon validation service backed by an event-fed local coupon projection.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Maxsuel Einstein")

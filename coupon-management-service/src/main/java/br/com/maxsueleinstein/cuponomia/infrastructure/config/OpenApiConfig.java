@@ -3,8 +3,11 @@ package br.com.maxsueleinstein.cuponomia.infrastructure.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * OpenAPI / Swagger configuration.
@@ -15,10 +18,13 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI cuponomiaOpenAPI() {
         return new OpenAPI()
+                .tags(List.of(
+                        new Tag().name("Coupon Management").description("Create, list, inspect, and deactivate coupons."),
+                        new Tag().name("System").description("Service navigation and health helpers.")))
                 .info(new Info()
-                        .title("Cuponomia API")
-                        .description("Sistema de Cupons com Regras Dinâmicas — API REST para criação, "
-                                + "gerenciamento e aplicação de cupons de desconto no checkout.")
+                        .title("Cuponomia Management API")
+                        .description("Coupon administration service for creating discount coupons, publishing coupon events, "
+                                + "and exposing a recruiter-friendly Swagger workflow.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Maxsuel Einstein")

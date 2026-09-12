@@ -4,6 +4,8 @@ import br.com.maxsueleinstein.cuponomia.application.dto.ApplyCouponRequest;
 import br.com.maxsueleinstein.cuponomia.application.dto.ApplyCouponResponse;
 import br.com.maxsueleinstein.cuponomia.application.usecase.CheckoutTimeoutService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +26,7 @@ import java.util.concurrent.CompletionStage;
  */
 @RestController
 @RequestMapping("/api/v1/checkout")
-@Tag(name = "Checkout", description = "Operações de aplicação de cupom no checkout")
+@Tag(name = "Checkout Validation", description = "Apply coupons during checkout and inspect validation results.")
 public class CheckoutController {
 
     private final CheckoutTimeoutService checkoutTimeoutService;
@@ -34,11 +36,21 @@ public class CheckoutController {
     }
 
     @PostMapping("/apply-coupon")
-    @Operation(summary = "Aplicar cupom no checkout", description = "Valida e aplica um cupom ao pedido informado. Retorna os detalhes do desconto ou os erros de validação.")
+    @Operation(summary = "Apply coupon at checkout", description = "Validates and applies a coupon to the submitted order total.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Checkout payload used by the demo guide. MAX50 is included in the seed data.",
+            required = true,
+            content = @Content(examples = @ExampleObject(name = "Apply MAX50 coupon", value = """
+                    {
+                      "couponCode": "MAX50",
+                      "clientId": "recruiter-demo",
+                      "orderTotal": 16000.00
+                    }
+                    """)))
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Cupom processado (verifique o campo 'valid' para o resultado)"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
-            @ApiResponse(responseCode = "404", description = "Cupom não encontrado")
+            @ApiResponse(responseCode = "200", description = "Coupon processed. Check the 'valid' field for the business result."),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "404", description = "Coupon not found")
     })
     public CompletionStage<ResponseEntity<ApplyCouponResponse>> applyCoupon(
             @Valid @RequestBody ApplyCouponRequest request) {

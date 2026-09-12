@@ -8,6 +8,8 @@ import br.com.maxsueleinstein.cuponomia.application.usecase.GetCouponUseCase;
 import br.com.maxsueleinstein.cuponomia.application.usecase.ListCouponsUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/coupons")
-@Tag(name = "Cupons", description = "Operações de gerenciamento de cupons de desconto")
+@Tag(name = "Coupon Management", description = "Create, list, inspect, and deactivate discount coupons.")
 public class CouponController {
 
         private final CreateCouponUseCase createCouponUseCase;
@@ -45,11 +47,28 @@ public class CouponController {
         }
 
         @PostMapping
-        @Operation(summary = "Criar novo cupom", description = "Cria um cupom com tipo de desconto (fixo ou percentual), valor e regras de validação opcionais")
+        @Operation(summary = "Create a coupon", description = "Creates a coupon with a fixed or percentage discount and optional validation rules.")
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                        description = "Coupon payload used by the demo guide. Change the code if you run the request more than once.",
+                        required = true,
+                        content = @Content(examples = @ExampleObject(name = "Create recruiter demo coupon", value = """
+                                        {
+                                          "code": "RECRUITER50",
+                                          "description": "50% discount for a recruiter demo checkout.",
+                                          "discountType": "PERCENTAGE",
+                                          "discountValue": 50,
+                                          "rules": {
+                                            "minimumOrderValue": 16000.00,
+                                            "expiresAt": "2027-12-31T23:59:59",
+                                            "singleUsePerClient": true,
+                                            "maxUsages": 10
+                                          }
+                                        }
+                                        """)))
         @ApiResponses({
-                        @ApiResponse(responseCode = "201", description = "Cupom criado com sucesso"),
-                        @ApiResponse(responseCode = "400", description = "Dados inválidos na requisição"),
-                        @ApiResponse(responseCode = "409", description = "Já existe um cupom com este código")
+                        @ApiResponse(responseCode = "201", description = "Coupon created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+                        @ApiResponse(responseCode = "409", description = "A coupon with this code already exists")
         })
         public ResponseEntity<CouponResponse> createCoupon(@Valid @RequestBody CreateCouponRequest request) {
                 CouponResponse response = createCouponUseCase.execute(request);
@@ -57,32 +76,32 @@ public class CouponController {
         }
 
         @GetMapping
-        @Operation(summary = "Listar todos os cupons", description = "Retorna todos os cupons cadastrados, com filtro opcional por status ativo/inativo")
-        @ApiResponse(responseCode = "200", description = "Lista de cupons retornada com sucesso")
+        @Operation(summary = "List coupons", description = "Returns all coupons, optionally filtered by active/inactive status.")
+        @ApiResponse(responseCode = "200", description = "Coupons returned successfully")
         public ResponseEntity<List<CouponResponse>> listCoupons(
-                        @Parameter(description = "Filtrar por status ativo (true/false)") @RequestParam(required = false) Boolean active) {
+                        @Parameter(description = "Filter by active status.", example = "true") @RequestParam(required = false) Boolean active) {
                 return ResponseEntity.ok(listCouponsUseCase.execute(active));
         }
 
         @GetMapping("/{code}")
-        @Operation(summary = "Buscar cupom por código", description = "Retorna os dados de um cupom a partir do seu código único")
+        @Operation(summary = "Get coupon by code", description = "Returns the public data for a coupon code.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "Cupom encontrado"),
-                        @ApiResponse(responseCode = "404", description = "Cupom não encontrado")
+                        @ApiResponse(responseCode = "200", description = "Coupon found"),
+                        @ApiResponse(responseCode = "404", description = "Coupon not found")
         })
         public ResponseEntity<CouponResponse> getCoupon(
-                        @Parameter(description = "Código do cupom", example = "VERAO15") @PathVariable String code) {
+                        @Parameter(description = "Coupon code.", example = "MAX50") @PathVariable String code) {
                 return ResponseEntity.ok(getCouponUseCase.execute(code));
         }
 
         @PatchMapping("/{code}/deactivate")
-        @Operation(summary = "Desativar um cupom", description = "Marca o cupom como inativo, impedindo seu uso em novos checkouts")
+        @Operation(summary = "Deactivate a coupon", description = "Marks a coupon as inactive so it can no longer be used in new checkouts.")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "Cupom desativado com sucesso"),
-                        @ApiResponse(responseCode = "404", description = "Cupom não encontrado")
+                        @ApiResponse(responseCode = "200", description = "Coupon deactivated successfully"),
+                        @ApiResponse(responseCode = "404", description = "Coupon not found")
         })
         public ResponseEntity<CouponResponse> deactivateCoupon(
-                        @Parameter(description = "Código do cupom a desativar", example = "VERAO15") @PathVariable String code) {
+                        @Parameter(description = "Coupon code to deactivate.", example = "RECRUITER50") @PathVariable String code) {
                 return ResponseEntity.ok(deactivateCouponUseCase.execute(code));
         }
 }

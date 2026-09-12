@@ -54,7 +54,14 @@ Deixei um Dockerfile caprichado, usando multi-stage build pra não pesar a image
 
 ### Fase 10: O Laço de Fita (Documentação)
 Um projeto sem documentação e sem dados pra testar é triste.
-Gerei um README completo, um Swagger com dados preenchidos e um `data.sql` que já sobe 7 cupons pra galera brincar logo de cara.
+Gerei um README completo, um Swagger com exemplos prontos e um `data.sql` que já sobe cupons de demonstração pra galera brincar logo de cara.
+
+Hoje a experiência de demonstração está pensada para recrutadores e revisores técnicos:
+
+- A raiz de cada serviço (`http://localhost:8081/` e `http://localhost:8082/`) redireciona para o respectivo Swagger.
+- O Swagger do serviço de gestão traz exemplos para criar cupons.
+- O Swagger do serviço de validação traz exemplo para aplicar o cupom `MAX50` no checkout.
+- O arquivo `docs/DEMO_GUIDE.md` descreve o caminho feliz e cenários de falha, como cupom expirado, inativo e pedido abaixo do valor mínimo.
 
 ---
 

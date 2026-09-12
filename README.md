@@ -11,6 +11,7 @@ The project is designed to be explored through Swagger:
 - Validation API Swagger: `http://localhost:8082/swagger-ui.html`
 - Root redirects: `http://localhost:8081/` and `http://localhost:8082/` open each service's Swagger UI.
 - Recruiter guide: [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md)
+- The published demo hub links back to this README and the demo guide, so reviewers can move between the live environment and documentation quickly.
 
 Both Swagger UIs include ready-to-run request examples. The quickest path is:
 

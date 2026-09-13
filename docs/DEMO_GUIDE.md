@@ -2,11 +2,13 @@
 
 This guide is the fastest way to evaluate Cuponomia from a browser using Swagger UI.
 
-Published demo hub:
+Published Swagger target:
 
 ```text
 https://cuponomia.maxsueleinstein.dev
 ```
+
+The production domain should open Swagger directly, matching the same behavior used by the Stratega back-end demo. The static portfolio remains the central place for project cards and navigation.
 
 ## 1. Start The Stack
 

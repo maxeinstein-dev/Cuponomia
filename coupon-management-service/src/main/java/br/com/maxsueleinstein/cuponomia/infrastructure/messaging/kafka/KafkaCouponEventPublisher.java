@@ -11,6 +11,7 @@ import br.com.maxsueleinstein.cuponomia.domain.rule.MinimumOrderValueRule;
 import br.com.maxsueleinstein.cuponomia.domain.rule.SingleUsePerClientRule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 @Component
 @Profile("!test")
+@ConditionalOnProperty(name = "cuponomia.kafka.enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaCouponEventPublisher implements CouponEventPublisher {
 
     private final KafkaTemplate<String, CouponChangedEvent> kafkaTemplate;

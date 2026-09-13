@@ -1,6 +1,7 @@
 package br.com.maxsueleinstein.cuponomia.infrastructure.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.tags.Tag;
@@ -24,10 +25,14 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Cuponomia Management API")
                         .description("Coupon administration service for creating discount coupons, publishing coupon events, "
-                                + "and exposing a recruiter-friendly Swagger workflow.")
+                                + "and exposing a recruiter-friendly Swagger workflow. Documentation: "
+                                + "https://github.com/maxeinstein-dev/Cuponomia#readme")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Maxsuel Einstein")
-                                .url("https://github.com/maxsueleinstein")));
+                                .url("https://github.com/maxeinstein-dev")))
+                .externalDocs(new ExternalDocumentation()
+                        .description("README and demo guide")
+                        .url("https://github.com/maxeinstein-dev/Cuponomia/blob/master/docs/DEMO_GUIDE.md"));
     }
 }

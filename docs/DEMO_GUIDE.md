@@ -10,6 +10,15 @@ https://cuponomia.maxsueleinstein.dev
 
 The production domain should open Swagger directly, matching the same behavior used by the Stratega back-end demo. The static portfolio remains the central place for project cards and navigation.
 
+## Production Demo Constraint
+
+Cuponomia is implemented as two services in this repository:
+
+- `coupon-management-service`: creates and manages coupons, publishes coupon events.
+- `coupon-validation-service`: consumes coupon events and validates checkout usage.
+
+The published demo uses one Render web service and one PostgreSQL database to keep the setup within the free plan. For that reason, the production Swagger consolidates the recruiter flow in `coupon-management-service` and includes a demo checkout endpoint there. The separated microservice architecture remains visible in the source code, Docker Compose setup, and local demo flow.
+
 ## 1. Start The Stack
 
 ```bash
@@ -19,6 +28,11 @@ docker compose up --build
 Wait until both services and both PostgreSQL containers are healthy.
 
 ## 2. Open Swagger
+
+Production:
+
+- Root URL: `https://cuponomia.maxsueleinstein.dev/`
+- Swagger URL: `https://cuponomia.maxsueleinstein.dev/swagger-ui.html`
 
 Management service:
 
@@ -78,7 +92,9 @@ If you run this request more than once, change `code` to a new value because cou
 
 ## 5. Apply A Coupon At Checkout
 
-Open the validation Swagger and run:
+In production, use the same published Swagger. Locally, use the validation Swagger if the full Docker Compose stack is running.
+
+Run:
 
 ```http
 POST /api/v1/checkout/apply-coupon

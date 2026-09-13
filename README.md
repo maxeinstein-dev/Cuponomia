@@ -13,10 +13,14 @@ The project is designed to be explored through Swagger:
 - Recruiter guide: [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md)
 - The published Swagger includes links back to this README and the demo guide, so reviewers can move between the live API and documentation quickly.
 
+### Production Demo Constraint
+
+The repository keeps the architecture split into management and validation services. The published Render demo intentionally exposes a single Swagger from `coupon-management-service` because the free plan currently has one web service and one PostgreSQL database available for this project. To keep the recruiter demo usable inside that constraint, the management service also exposes a demo checkout endpoint in the same Swagger. Kafka can be disabled in this environment with `CUPONOMIA_KAFKA_ENABLED=false`.
+
 Both Swagger UIs include ready-to-run request examples. The quickest path is:
 
 1. Open the management Swagger and inspect or create a coupon.
-2. Open the validation Swagger and apply `MAX50` at checkout.
+2. Apply `MAX50` at checkout from the same published Swagger.
 3. Compare successful, invalid, inactive, and expired coupon scenarios.
 
 ## What This Project Demonstrates
@@ -105,6 +109,24 @@ Run one module locally:
 ./mvnw -pl coupon-validation-service -am spring-boot:run
 ```
 
+## Render Demo Environment
+
+Use these variables for the single Swagger demo:
+
+```env
+SPRING_PROFILES_ACTIVE=docker
+SERVER_PORT=10000
+JAVA_OPTS=-Xmx512m
+MODULE=coupon-management-service
+CUPONOMIA_KAFKA_ENABLED=false
+SPRING_DATASOURCE_URL=jdbc:postgresql://<internal-database-host>:5432/<database-name>
+SPRING_DATASOURCE_USERNAME=<database-user>
+SPRING_DATASOURCE_PASSWORD=<database-password>
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+```
+
+`SPRING_DATASOURCE_URL` must include the `jdbc:` prefix. Render's internal PostgreSQL URL usually needs to be converted from `postgresql://...` to `jdbc:postgresql://...`.
+
 ## Main Endpoints
 
 Management service, port `8081`:
@@ -115,6 +137,12 @@ Management service, port `8081`:
 | `GET` | `/api/v1/coupons` | List coupons |
 | `GET` | `/api/v1/coupons/{code}` | Get coupon by code |
 | `PATCH` | `/api/v1/coupons/{code}/deactivate` | Deactivate coupon |
+
+Single Swagger demo endpoint, exposed by the management service in production:
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/api/v1/checkout/apply-coupon` | Validate and apply a coupon for the free Render demo |
 
 Validation service, port `8082`:
 
